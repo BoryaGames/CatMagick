@@ -31,3 +31,11 @@ html, body {
   bottom: 0;
   right: 0;
 }
+
+.cm-circle {
+  border-radius: 50%;
+}
+
+.cm-click {
+  cursor: pointer;
+}
