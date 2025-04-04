@@ -170,7 +170,7 @@
         realNode._catmagickEvents = virtualNode._catmagickEvents;
         for (var prop of new Set([...Object.keys(virtualNode._catmagickProps), ...Object.keys(realNode._catmagickProps)])) {
           if (!Object.keys(virtualNode._catmagickProps).includes(prop) && Object.keys(realNode._catmagickProps).includes(prop)) {
-            delete realNode[prop];
+            realNode.removeAttribute((prop == "className") ? "class" : prop);
           } else if ((Object.keys(virtualNode._catmagickProps).includes(prop) && !Object.keys(realNode._catmagickProps).includes(prop)) || virtualNode._catmagickProps[prop] !== realNode._catmagickProps[prop]) {
             if (prop == "style") {
               for (var prop of new Set([...Object.keys(virtualNode._catmagickProps.style || {}), ...Object.keys(realNode._catmagickProps.style || {})])) {
