@@ -175,7 +175,7 @@
             if (prop == "style") {
               for (var prop of new Set([...Object.keys(virtualNode._catmagickProps.style || {}), ...Object.keys(realNode._catmagickProps.style || {})])) {
                 if (!Object.keys(virtualNode._catmagickProps.style || {}).includes(prop) && Object.keys(realNode._catmagickProps.style || {}).includes(prop)) {
-                  delete realNode.style[prop];
+                  realNode.style[prop] = "";
                 } else if ((Object.keys(virtualNode._catmagickProps.style || {}).includes(prop) && !Object.keys(realNode._catmagickProps.style || {}).includes(prop)) || virtualNode._catmagickProps.style[prop] !== realNode._catmagickProps.style[prop]) {
                   realNode.style[prop] = (typeof virtualNode._catmagickProps.style[prop] === "number") ? `${virtualNode._catmagickProps.style[prop]}px` : virtualNode._catmagickProps.style[prop];
                 }
