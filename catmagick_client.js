@@ -103,6 +103,14 @@
         domElement._catmagickEvents.click = element.props.click;
         domElement.addEventListener("click", element.props.click);
       }
+      if (typeof element.props.hover === "function") {
+        domElement._catmagickEvents.mouseover = element.props.hover;
+        domElement.addEventListener("mouseover", element.props.hover);
+      }
+      if (typeof element.props.hoverEnd === "function") {
+        domElement._catmagickEvents.mouseout = element.props.hoverEnd;
+        domElement.addEventListener("mouseout", element.props.hoverEnd);
+      }
       domElement._catmagickProps = element.props;
       if (typeof element.props.ref === "function") {
         element.props.ref[elementContainsSymbol] = domElement;
@@ -349,6 +357,9 @@
     function getElement() {
       return getElement[elementContainsSymbol];
     }
+    getElement.displayData = () => {
+      return getElement().getBoundingClientRect();
+    };
     getElement[elementContainsSymbol] = null;
     return getElement;
   }
