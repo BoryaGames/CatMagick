@@ -108,7 +108,7 @@
         element.props.ref[elementContainsSymbol] = domElement;
       }
       Object.keys(element.props).forEach(key => domElement[key] = element.props[key]);
-      Object.keys((element.props.style || {})).forEach(key => domElement.style[key] = element.props.style[key]);
+      Object.keys((element.props.style || {})).forEach(key => domElement.style[key] = (typeof element.props.style[key] === "number") ? `${element.props.style[key]}px` : element.props.style[key]);
       render(!1, element.children, domElement);
       parent.appendChild(domElement);
       currentPath.pop();
@@ -169,7 +169,7 @@
                 if (!Object.keys(virtualNode._catmagickProps.style).includes(prop) && Object.keys(realNode._catmagickProps.style).includes(prop)) {
                   delete realNode.style[prop];
                 } else if ((Object.keys(virtualNode._catmagickProps.style).includes(prop) && !Object.keys(realNode._catmagickProps.style).includes(prop)) || virtualNode._catmagickProps.style[prop] !== realNode._catmagickProps.style[prop]) {
-                  realNode.style[prop] = virtualNode._catmagickProps.style[prop];
+                  realNode.style[prop] = (typeof virtualNode._catmagickProps.style[prop] === "number") ? `${virtualNode._catmagickProps.style[prop]}px` : virtualNode._catmagickProps.style[prop];
                 }
               }
             } else {

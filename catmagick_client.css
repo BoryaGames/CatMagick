@@ -1,11 +1,27 @@
 .cm-w-f {
   width: 100%;
 }
-
 .cm-h-f {
   height: 100%;
 }
 
 .cm-pos-fix {
   position: fixed;
+}
+
+.cm-pos-tl {
+  top: 0;
+  left: 0;
+}
+.cm-pos-tr {
+  top: 0;
+  right: 0;
+}
+.cm-pos-bl {
+  bottom: 0;
+  left: 0;
+}
+.cm-pos-br {
+  bottom: 0;
+  right: 0;
 }
