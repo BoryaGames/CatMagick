@@ -17,6 +17,7 @@
   var currentMemoIndex = 0;
   var currentCacheIndex = 0;
   var currentEventIndex = 0;
+  var textElementSymbol = Symbol("CatMagick.TextElement");
   var elementContainsSymbol = Symbol("CatMagick.ElementContains");
   var virtualDom = document.createElement("body");
   var rootElement = "Root";
@@ -30,7 +31,7 @@
   CatMagick.createElement = (type, props, ...children) => {
     props = (props || {});
     children = children.flat(Infinity).filter(child => child !== void 0 && child !== null).map(child => (typeof child === "string" || typeof child === "number") ? {
-      "type": "TEXT_ELEMENT",
+      "type": textElementSymbol,
       "props": {
         "nodeValue": child.toString()
       },
@@ -90,13 +91,13 @@
         if (element.children.length == 1) {
           element = element.children[0];
         } else {
-          var filtered = element.children.filter(child => child.type != "TEXT_ELEMENT" || child.props.nodeValue.trim());
+          var filtered = element.children.filter(child => child.type != textElementSymbol || child.props.nodeValue.trim());
           if (filtered.length == 1) {
             element = filtered[0];
           }
         }
       }
-      var domElement = (element.type == "TEXT_ELEMENT") ? document.createTextNode("") : document.createElement(element.type);
+      var domElement = (element.type == textElementSymbol) ? document.createTextNode("") : document.createElement(element.type);
       domElement._catmagickEvents = {};
       if (typeof element.props.click === "function") {
         domElement._catmagickEvents.click = element.props.click;
