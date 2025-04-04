@@ -244,7 +244,7 @@ function patchHTML(code) {
   if (doctype) {
     code = code.replace(/^<!DOCTYPE html>(\r?\n)?/, "");
   }
-  return `${doctype ? "<!DOCTYPE html>\n" : ""}<script src="/catmagick_client.js"></script>\n${code}`;
+  return `${doctype ? "<!DOCTYPE html>\n" : ""}<link href="/catmagick_client.css" rel="stylesheet">\n<script src="/catmagick_client.js"></script>\n${code}`;
 }
 
 server.use((req, res, next) => {
@@ -322,6 +322,9 @@ server.use((req, res, next) => {
     }
   }
 
+  if (req.path == "/catmagick_client.css") {
+    return res.sendFile(path.join(__dirname, "catmagick_client.css"));
+  }
   if (req.path == "/catmagick_client.js") {
     return res.sendFile(path.join(__dirname, "catmagick_client.js"));
   }
