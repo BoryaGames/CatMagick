@@ -86,7 +86,7 @@
         element = {
           "type": "div",
           "props": {},
-          "children": components[element.type].render()
+          "children": (components[element.type].render() || [])
         };
         if (element.children.length == 1) {
           element = element.children[0];
