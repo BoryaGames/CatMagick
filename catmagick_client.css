@@ -49,3 +49,9 @@ html, body {
 .cm-display-no {
   display: none;
 }
+.cm-display-block {
+  display: block;
+}
+.cm-display-flex {
+  display: flex;
+}

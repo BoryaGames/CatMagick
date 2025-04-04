@@ -173,7 +173,11 @@ function configureDatabase(hotReload) {
         return;
       }
       try {
-        return require(path.join(__dirname, "..", "..", "databases", database));
+        var value = require(path.join(__dirname, "..", "..", "databases", database));
+        if (!(value instanceof typeorm.EntitySchema)) {
+          log("WARN", `Skipping invalid database "${database.slice(0, -3)}"`);
+        }
+        return value;
       } catch(error) {
         if (hotReload) {
           log("ERROR", "Could not complete database hot reload due to the following error:");
@@ -189,6 +193,7 @@ function configureDatabase(hotReload) {
     if (failed) {
       return !1;
     }
+    entities = entities.filter(entity => entity instanceof typeorm.EntitySchema);
     dataSource = new typeorm.DataSource({
       "type": config.databaseType,
       "database": path.join(__dirname, "..", "..", config.databaseFile),
