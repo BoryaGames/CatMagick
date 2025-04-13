@@ -303,6 +303,30 @@ server.use((req, res, next) => {
     }
   };
 
+  var originalSendFile = res.sendFile;
+  res.sendFile = function(filePath) {
+    if (filePath.endsWith(".html")) {
+      res.header("Content-Type", "text/html; charset=UTF-8");
+      return res.end(patchHTML(fs.readFileSync(filePath).toString("utf-8")));
+    }
+    if (filePath.endsWith(".jsx")) {
+      res.header("Content-Type", "text/jsx; charset=UTF-8");
+      try {
+        var compiled = babel.transformSync(fs.readFileSync(filePath).toString("utf-8"), {
+          "plugins": ["babel-plugin-transform-catmagick-jsx"],
+          "sourceMaps": config.sourceMaps ? "inline": !1,
+          "sourceFileName": path.basename(filePath)
+        }).code;
+        compileCache[filePath] = compiled;
+      } catch(err) {
+        log("ERROR", `${req.path} - Cannot compile JSX due to the following error:`);
+        console.error(err.message);
+      }
+      return res.end(compileCache[filePath]);
+    }
+    return originalSendFile.apply(res, arguments);
+  };
+
   next();
 }).ws("/events", (ws, req) => {
   wsClients.push(ws);
@@ -353,25 +377,6 @@ server.use((req, res, next) => {
     }
   }
   if (fs.statSync(currentDirectory).isFile()) {
-    if (currentDirectory.endsWith(".html")) {
-      res.header("Content-Type", "text/html; charset=UTF-8");
-      return res.end(patchHTML(fs.readFileSync(currentDirectory).toString("utf-8")));
-    }
-    if (currentDirectory.endsWith(".jsx")) {
-      res.header("Content-Type", "text/jsx; charset=UTF-8");
-      try {
-        var compiled = babel.transformSync(fs.readFileSync(currentDirectory).toString("utf-8"), {
-          "plugins": ["babel-plugin-transform-catmagick-jsx"],
-          "sourceMaps": config.sourceMaps ? "inline": !1,
-          "sourceFileName": path.basename(currentDirectory)
-        }).code;
-        compileCache[currentDirectory] = compiled;
-      } catch(err) {
-        log("ERROR", `${req.path} - Cannot compile JSX due to the following error:`);
-        console.error(err.message);
-      }
-      return res.end(compileCache[currentDirectory]);
-    }
     return res.sendFile(currentDirectory);
   }
   if (fs.existsSync(path.join(currentDirectory, "_route.js"))) {
@@ -388,8 +393,7 @@ server.use((req, res, next) => {
     }
   }
   if (fs.existsSync(path.join(currentDirectory, "index.html"))) {
-    res.header("Content-Type", "text/html; charset=UTF-8");
-    return res.end(patchHTML(fs.readFileSync(path.join(currentDirectory, "index.html")).toString("utf-8")));
+    return res.sendFile(path.join(currentDirectory, "index.html"));
   }
   if (!fs.readdirSync(currentDirectory).length) {
     log("WARN", `${req.path} - Found empty directory`);
