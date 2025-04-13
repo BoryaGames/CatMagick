@@ -58,3 +58,9 @@ html, body {
 .cm-display-flex {
   display: flex;
 }
+.cm-display-iblock {
+  display: inline-block;
+}
+.cm-display-iflex {
+  display: inline-flex;
+}
