@@ -403,6 +403,17 @@
   window.useEvent = useEvent;
 
   window.addEventListener("popstate", () => {
+    for (var elementEffects of effects.values()) {
+      for (var [effectId, effect] of elementEffects.entries()) {
+        if (typeof effect[2] === "function") {
+          effect[2]();
+        }
+      }
+    }
+    states = new Map;
+    effects = new Map;
+    memos = new Map;
+    caches = new Map;
     var routeFound = !1;
     for (var route of Object.keys(routes)) {
       var match = location.pathname.match(createPathnameRegExp(route));
