@@ -48,6 +48,9 @@ html, body {
 .cm-click {
   cursor: pointer;
 }
+.cm-no-click {
+  cursor: not-allowed;
+}
 
 .cm-display-no {
   display: none;
@@ -63,4 +66,8 @@ html, body {
 }
 .cm-display-iflex {
   display: inline-flex;
+}
+
+.cm-no-select {
+  user-select: none;
 }
