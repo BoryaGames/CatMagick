@@ -370,6 +370,10 @@
     });
   };
 
+  CatMagick.rerender = () => {
+    render(!0);
+  };
+
   function useElement() {
     function getElement() {
       return getElement[elementContainsSymbol];
