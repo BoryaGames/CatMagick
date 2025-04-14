@@ -162,7 +162,7 @@
         virtual.replaceChild(virtualNode.cloneNode(!0), virtualNode);
         real.appendChild(virtualNode);
       } else if (!virtualNode && realNode) {
-        if (typeof realNode._catmagickProps.ref === "function") {
+        if (realNode._catmagickProps && typeof realNode._catmagickProps.ref === "function") {
           realNode._catmagickProps.ref[elementContainsSymbol] = null;
         }
         toRemove.push(realNode);
