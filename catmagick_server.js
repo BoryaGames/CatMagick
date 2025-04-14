@@ -28,12 +28,12 @@ config = Object.assign({
   "secureCookie": !0
 }, config);
 
-var CatMagick = {
+var CatMagick = {};
+var options = {
   "proxies": config.proxies,
   "sslProxy": config.sslProxy,
   "secureCookie": config.secureCookie
 };
-var options = {};
 if (config.port) {
   options.port = config.port;
 }
