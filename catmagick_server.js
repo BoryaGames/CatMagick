@@ -15,22 +15,33 @@ var path = require("path");
 config = Object.assign({
   "port": null,
   "domain": null,
+  "proxies": 0,
+  "sslProxy": false,
   "logRequests": !0,
   "logWebSocket": !0,
   "hotReload": !0,
   "sourceMaps": !0,
   "database": !1,
   "databaseType": "sqlite",
-  "databaseFile": "database.db"
+  "databaseFile": "database.db",
+  "sessionSecret": null,
+  "secureCookie": !0
 }, config);
 
-var CatMagick = {};
+var CatMagick = {
+  "proxies": config.proxies,
+  "sslProxy": config.sslProxy,
+  "secureCookie": config.secureCookie
+};
 var options = {};
 if (config.port) {
   options.port = config.port;
 }
 if (config.domain) {
   options.domain = config.domain;
+}
+if (config.sessionSecret) {
+  options.secret = config.sessionSecret;
 }
 var server = new cattojs.Server(options);
 var compileCache = {};
