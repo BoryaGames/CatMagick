@@ -47,6 +47,10 @@
     }
   }
 
+  function createPathnameRegExp(path) {
+    return new RegExp(path.replace(/\$([A-Za-z0-9]+)/g, "(?<$1>[A-Za-z0-9]+)"));
+  }
+
   function render(isRoot, elements, parent) {
     if (isRoot) {
       if (!components[rootElement]) {
@@ -290,7 +294,7 @@
   CatMagick.route = (path, root) => {
     debugLog(`Registered route "${path}".`);
     routes[path] = root;
-    var match = location.pathname.match(new RegExp(path.replace(/\$([A-Za-z0-9]+)/g, "(?<$1>[A-Za-z0-9]+)")));
+    var match = location.pathname.match(createPathnameRegExp(path));
     if (match) {
       rootElement = root;
       routeParams = match.groups;
@@ -308,21 +312,25 @@
       path = `${path.pathname}${path.search}${path.hash}`;
     } catch {}
     history.pushState(null, null, path);
-    if (routes[(new URL(location.origin + path)).pathname]) {
-      for (var elementEffects of effects.values()) {
-        for (var [effectId, effect] of elementEffects.entries()) {
-          if (typeof effect[2] === "function") {
-            effect[2]();
+    for (var route of Object.keys(routes)) {
+      var match = (new URL(location.origin + path)).pathname.match(createPathnameRegExp(route));
+      if (match) {
+        for (var elementEffects of effects.values()) {
+          for (var [effectId, effect] of elementEffects.entries()) {
+            if (typeof effect[2] === "function") {
+              effect[2]();
+            }
           }
         }
+        states = new Map;
+        effects = new Map;
+        memos = new Map;
+        caches = new Map;
+        rootElement = routes[route];
+        routeParams = match.groups;
+        render(!0);
+        return;
       }
-      states = new Map;
-      effects = new Map;
-      memos = new Map;
-      caches = new Map;
-      rootElement = routes[(new URL(location.origin + path)).pathname];
-      render(!0);
-      return;
     }
     fetch(path).then(res => res.text()).then(async html => {
       for (var elementEffects of effects.values()) {
