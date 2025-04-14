@@ -1,6 +1,6 @@
 {
   "name": "catmagick",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "CatMagick is a framework to make websites easily.",
   "main": "catmagick_server.js",
   "scripts": {
