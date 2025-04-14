@@ -7,6 +7,11 @@ html, body {
   top: 0;
 }
 
+img {
+  user-drag: none;
+  -webkit-user-drag: none;
+}
+
 .cm-w-f {
   width: 100%;
 }
@@ -70,4 +75,7 @@ html, body {
 
 .cm-no-select {
   user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
