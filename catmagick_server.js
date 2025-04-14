@@ -133,7 +133,7 @@ CatMagick.Database = class {
       entity2.edit = async props2 => {
         Object.assign(entity2, props2);
         for (var prop of Object.keys(props2)) {
-          if (databaseRelations.has(this.name) && databaseRelations.get(this.name).has(prop)) {
+          if (databaseRelations.has(this.name) && databaseRelations.get(this.name).has(prop) && props2[prop]) {
             entity[prop] = props2[prop]._props[Object.keys(databaseRelations.get(this.name).get(prop).options.columns)[0]];
           } else {
             entity[prop] = props2[prop];
@@ -151,7 +151,7 @@ CatMagick.Database = class {
   async add(props) {
     if (databaseRelations.has(this.name)) {
       for (var prop of Object.keys(props)) {
-        if (databaseRelations.get(this.name).has(prop)) {
+        if (databaseRelations.get(this.name).has(prop) && props[prop]) {
           props[prop] = props[prop]._props[Object.keys(databaseRelations.get(this.name).get(prop).options.columns)[0]];
         }
       }
