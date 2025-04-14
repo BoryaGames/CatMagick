@@ -25,7 +25,6 @@
   var routeParams = {};
   var ws = null;
   var pingInterval = null;
-  routes[location.pathname] = rootElement;
 
   CatMagick.debug = !1;
 
