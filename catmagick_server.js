@@ -379,7 +379,7 @@ server.use((req, res, next) => {
     var part = parts.shift();
     if (part.split(".").join("")) {
       var elements = fs.readdirSync(currentDirectory);
-      if (elements.includes(part)) {
+      if (elements.includes(part) && part != "_route.js") {
         currentDirectory = path.join(currentDirectory, part);
       } else if (elements.find(element => element.length > 1 && element.startsWith("$"))) {
         req.params[elements.find(element => element.length > 1 && element.startsWith("$")).slice(1)] = part;
