@@ -396,13 +396,21 @@ server.use((req, res, next) => {
   }
   if (fs.existsSync(path.join(currentDirectory, "_route.js"))) {
     try {
-      return await require(path.join(currentDirectory, "_route.js"))[req.method.toLowerCase()](req, res, next);
+      var methods = await require(path.join(currentDirectory, "_route.js"));
+      if (!methods[req.method.toLowerCase()]) {
+        res.status(405);
+        if (fs.existsSync("405.html")) {
+          return res.sendFile(path.join(__dirname, "..", "..", "405.html"));
+        }
+        return res.end("405 Method Not Allowed");
+      }
+      return methods[req.method.toLowerCase()](req, res, next);
     } catch(err) {
       log("ERROR", `${req.path} - Cannot execute route due to the following error:`);
       console.error(err);
       res.status(500);
       if (fs.existsSync("500.html")) {
-        res.sendFile(path.join(__dirname, "..", "..", "500.html"));
+        return res.sendFile(path.join(__dirname, "..", "..", "500.html"));
       }
       return res.end("500 Internal Server Error");
     }
