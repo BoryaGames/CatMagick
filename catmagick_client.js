@@ -116,6 +116,10 @@
         domElement._catmagickEvents.mouseout = element.props.hoverEnd;
         domElement.addEventListener("mouseout", element.props.hoverEnd);
       }
+      if (typeof element.props.change === "function") {
+        domElement._catmagickEvents.input = element.props.change;
+        domElement.addEventListener("input", element.props.change);
+      }
       domElement._catmagickProps = element.props;
       if (typeof element.props.ref === "function") {
         element.props.ref[elementContainsSymbol] = domElement;
