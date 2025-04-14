@@ -399,7 +399,19 @@
   window.useEvent = useEvent;
 
   window.addEventListener("popstate", () => {
-    rootElement = (routes[location.pathname] || "Root");
+    var routeFound = !1;
+    for (var route of Object.keys(routes)) {
+      var match = location.pathname.match(createPathnameRegExp(route));
+      if (match) {
+        routeFound = !0;
+        rootElement = routes[route];
+        routeParams = match.groups;
+        break;
+      }
+    }
+    if (!routeFound) {
+      rootElement = "Root";
+    }
     render(!0);
   });
 
