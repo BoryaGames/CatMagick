@@ -48,7 +48,7 @@
   }
 
   function createPathnameRegExp(path) {
-    return new RegExp(path.replace(/\$([A-Za-z0-9]+)/g, "(?<$1>[A-Za-z0-9]+)"));
+    return new RegExp(`^${path.replace(/\$([A-Za-z0-9]+)/g, "(?<$1>[A-Za-z0-9]+)")}$`);
   }
 
   function render(isRoot, elements, parent) {
