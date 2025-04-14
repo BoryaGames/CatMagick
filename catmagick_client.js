@@ -22,6 +22,7 @@
   var virtualDom = document.createElement("body");
   var rootElement = "Root";
   var routes = {};
+  var routeParams = {};
   var ws = null;
   var pingInterval = null;
   routes[location.pathname] = rootElement;
@@ -280,14 +281,19 @@
 
   function useLocation() {
     var { pathname, search, hash } = location;
-    return { pathname, search, hash };
+    return {
+      pathname, search, hash,
+      "params": routeParams
+    };
   }
 
   CatMagick.route = (path, root) => {
     debugLog(`Registered route "${path}".`);
     routes[path] = root;
-    if (location.pathname == path) {
+    var match = location.pathname.match(new RegExp(path.replace(/\$([A-Za-z0-9]+)/g, "(?<$1>[A-Za-z0-9]+)")));
+    if (match) {
       rootElement = root;
+      routeParams = match.groups;
     }
   };
 
