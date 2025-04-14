@@ -14,6 +14,7 @@ var path = require("path");
 
 config = Object.assign({
   "port": null,
+  "domain": null,
   "logRequests": !0,
   "logWebSocket": !0,
   "hotReload": !0,
@@ -27,6 +28,9 @@ var CatMagick = {};
 var options = {};
 if (config.port) {
   options.port = config.port;
+}
+if (config.domain) {
+  options.domain = config.domain;
 }
 var server = new cattojs.Server(options);
 var compileCache = {};
@@ -466,3 +470,5 @@ if (config.hotReload) {
     });
   }
 }
+
+CatMagick.server = server;
