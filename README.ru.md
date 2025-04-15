@@ -1,4 +1,4 @@
-# CatMagick
+# 😺 CatMagick ✨
 ## *Самый мяу-чий фреймворк, за всё время*
 
 ![Сборка](https://github.com/BoryaGames/CatMagick/actions/workflows/test.yml/badge.svg)
@@ -28,10 +28,10 @@ CatMagick требует [Node.js](https://nodejs.org) для запуска.
 Установите его в свой проект испольузя [реестр NPM](https://www.npmjs.com/package/catmagick).
 
 ```sh
-# Установить последнюю стабильную версию
+# Установите последнюю стабильную версию
 npm install catmagick
 
-# Установить последнюю версию в разработке из открытого кода
+# Установите последнюю версию в разработке из открытого кода
 npm install git+https://github.com/BoryaGames/CatMagick.git
 ```
 
@@ -54,13 +54,13 @@ CatMagick требует `config.json` файл в корне Вашего пр�
 {
   "port": 80, // порт на котором слушать вебсервер, по умолчанию автоопределение
   "domain": "example.com", // домен Вашего вебсайта, по умолчанию без домена
-  "proxies": 1, // number of proxies before your website (example, CloudFlare), required to correctly detect ip's under proxies
-  "sslProxy": true, // if your website is working on http, but there's some proxy (example, CloudFlare) adding a SSL in between, then set this option to true
-  "logRequests": true, // log all requests to console or not, defaults to true
-  "logWebSocket": true, // log all websocket connections or disconnections to console, defaults to true
+  "proxies": 1, // количество прокси перед Вашим вебсайтом (например, CloudFlare), необходимо что-бы правильно определять IP-адреса под прокси
+  "sslProxy": true, // если Ваш сайт работает на http, но какой-либо прокси (например, CloudFlare) добавляет SSL в середине, поставьте эту настройку на true
+  "logRequests": true, // записывать-ли все запросы в консоль, по умолчанию true
+  "logWebSocket": true, // записывать-ли все подключения или отключения к WebSocket в консоль, по умолчанию true
   "hotReload": true, // automatically detect changes in your routes or database files and perform a partial reload, defaults to true
   "sourceMaps": true, // should CatMagick add source maps after transforming .jsx files to .js, defaults to true
-  "database": true, // do you need a database in your project, defaults to false
+  "database": true, // необходима-ли Вам база данных в Вашем проекте, по умолчанию false
   "databaseType": "sqlite", // what database do you want, sqlite is the most easy one for beginners to setup, defaults to sqlite, you must install your database's package for it to work
   "databaseFile": "database.db", // if you use sqlite, what file should it save to, defaults to database.db
   "sessionSecret": "p2ssw0rd!", // if your project requires sessions to authorize the user, make a secure password for encrypting them, no default
