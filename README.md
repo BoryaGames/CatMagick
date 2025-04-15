@@ -54,7 +54,7 @@ CatMagick requires a `config.json` file in root of your project to start. While 
 {
   "port": 80, // webserver listen port, defaults to auto-detect
   "domain": "example.com", // your website's domain, no default
-  "proxies": 1, // number of proxies before your website (example, CloudFlare), required to correctly detect ip's under proxies
+  "proxies": 1, // number of proxies before your website (example, CloudFlare), required to correctly detect IP-addresses under proxies
   "sslProxy": true, // if your website is working on http, but there's some proxy (example, CloudFlare) adding a SSL in between, then set this option to true
   "logRequests": true, // log all requests to console or not, defaults to true
   "logWebSocket": true, // log all websocket connections or disconnections to console, defaults to true
