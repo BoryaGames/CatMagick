@@ -1,11 +1,13 @@
 # CatMagick
 ## *The Meow-iest Framework, Ever*
 
-![Build](https://github.com/BoryaGames/CatMagick/actions/workflows/npm-publish.yml/badge.svg)
+![Build](https://github.com/BoryaGames/CatMagick/actions/workflows/test.yml/badge.svg)
 ![Contributors](https://img.shields.io/github/contributors/BoryaGames/CatMagick)
 ![Chat on Discord](https://img.shields.io/discord/916772281747931198?logo=discord)
 
 CatMagick is a framework designed to make websites easily (both frontend and backend!).
+
+**English** | [Russian](./README.ru.md)
 
 ## Features
 
@@ -26,7 +28,11 @@ It works on **v22.2.0**, but will work on some other versions too.
 Install it in your project using [NPM registry](https://www.npmjs.com/package/catmagick).
 
 ```sh
+# Install latest stable version
 npm install catmagick
+
+# Install latest development version from source code
+npm install git+https://github.com/BoryaGames/CatMagick.git
 ```
 
 To run your project, you just need to require it.
@@ -44,7 +50,7 @@ node start.js
 
 CatMagick requires a `config.json` file in root of your project to start. While it has a lot of options, all of them are completely optional.
 
-```json
+```javascript
 {
   "port": 80, // webserver listen port, defaults to auto-detect
   "domain": "example.com", // your website's domain, no default
