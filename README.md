@@ -1,4 +1,4 @@
-# CatMagick
+# 😺 CatMagick ✨
 ## *The Meow-iest Framework, Ever*
 
 ![Build](https://github.com/BoryaGames/CatMagick/actions/workflows/test.yml/badge.svg)
@@ -14,7 +14,7 @@ CatMagick is a framework designed to make websites easily (both frontend and bac
 - [React](https://react.dev)-like UI components allows you to easily make and modify your UI structure using JSX
 - Transition between pages without reloading simillar to [ReactRouter](https://reactrouter.com)
 - Add simple classes instead of making CSS styles, just like in [Tailwind](https://tailwindcss.com)
-- Make API by just adding files in your "routes" folder
+- Make API by just adding files in your `routes` / `middleware` folders
 - Easily use database without knowing any SQL commands
 - No need to restart your server, it has *hot-reload* feature built-in
 - CatMagick also maintains WebSocket connection between your frontend and backend at all times, so you can easily synchronize them
