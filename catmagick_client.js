@@ -181,11 +181,11 @@
             realNode.removeAttribute((prop == "className") ? "class" : prop);
           } else if ((Object.keys(virtualNode._catmagickProps).includes(prop) && !Object.keys(realNode._catmagickProps).includes(prop)) || virtualNode._catmagickProps[prop] !== realNode._catmagickProps[prop]) {
             if (prop == "style") {
-              for (var prop of new Set([...Object.keys(virtualNode._catmagickProps.style || {}), ...Object.keys(realNode._catmagickProps.style || {})])) {
-                if (!Object.keys(virtualNode._catmagickProps.style || {}).includes(prop) && Object.keys(realNode._catmagickProps.style || {}).includes(prop)) {
-                  realNode.style[prop] = "";
-                } else if ((Object.keys(virtualNode._catmagickProps.style || {}).includes(prop) && !Object.keys(realNode._catmagickProps.style || {}).includes(prop)) || virtualNode._catmagickProps.style[prop] !== realNode._catmagickProps.style[prop]) {
-                  realNode.style[prop] = (typeof virtualNode._catmagickProps.style[prop] === "number") ? `${virtualNode._catmagickProps.style[prop]}px` : virtualNode._catmagickProps.style[prop];
+              for (var prop2 of new Set([...Object.keys(virtualNode._catmagickProps.style || {}), ...Object.keys(realNode._catmagickProps.style || {})])) {
+                if (!Object.keys(virtualNode._catmagickProps.style || {}).includes(prop2) && Object.keys(realNode._catmagickProps.style || {}).includes(prop2)) {
+                  realNode.style[prop2] = "";
+                } else if ((Object.keys(virtualNode._catmagickProps.style || {}).includes(prop2) && !Object.keys(realNode._catmagickProps.style || {}).includes(prop2)) || virtualNode._catmagickProps.style[prop2] !== realNode._catmagickProps.style[prop2]) {
+                  realNode.style[prop2] = (typeof virtualNode._catmagickProps.style[prop2] === "number") ? `${virtualNode._catmagickProps.style[prop2]}px` : virtualNode._catmagickProps.style[prop2];
                 }
               }
             } else {
@@ -319,7 +319,7 @@
       var match = (new URL(location.origin + path)).pathname.match(createPathnameRegExp(route));
       if (match) {
         for (var elementEffects of effects.values()) {
-          for (var [effectId, effect] of elementEffects.entries()) {
+          for (var effect of elementEffects.values()) {
             if (typeof effect[2] === "function") {
               effect[2]();
             }
@@ -337,7 +337,7 @@
     }
     fetch(path).then(res => res.text()).then(async html => {
       for (var elementEffects of effects.values()) {
-        for (var [effectId, effect] of elementEffects.entries()) {
+        for (var effect of elementEffects.values()) {
           if (typeof effect[2] === "function") {
             effect[2]();
           }
@@ -407,7 +407,7 @@
 
   window.addEventListener("popstate", () => {
     for (var elementEffects of effects.values()) {
-      for (var [effectId, effect] of elementEffects.entries()) {
+      for (var effect of elementEffects.values()) {
         if (typeof effect[2] === "function") {
           effect[2]();
         }
