@@ -370,7 +370,8 @@ server.use((req, res, next) => {
     return res.sendFile(path.join(__dirname, "catmagick_client.css"));
   }
   if (req.path == "/catmagick_client.js") {
-    return res.sendFile(path.join(__dirname, "catmagick_client.js"));
+    res.header("Content-Type", "application/javascript; charset=UTF-8");
+    return res.end(fs.readFileSync(path.join(__dirname, "pako_inflate.min.js")).toString("utf-8") + "\n\n" + fs.readFileSync(path.join(__dirname, "catmagick_client.js")).toString("utf-8"));
   }
 
   var parts = req.path.split("/").filter(part => part);
