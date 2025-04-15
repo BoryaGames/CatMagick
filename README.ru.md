@@ -58,13 +58,13 @@ CatMagick требует `config.json` файл в корне Вашего пр�
   "sslProxy": true, // если Ваш сайт работает на http, но какой-либо прокси (например, CloudFlare) добавляет SSL в середине, поставьте эту настройку на true
   "logRequests": true, // записывать-ли все запросы в консоль, по умолчанию true
   "logWebSocket": true, // записывать-ли все подключения или отключения к WebSocket в консоль, по умолчанию true
-  "hotReload": true, // automatically detect changes in your routes or database files and perform a partial reload, defaults to true
-  "sourceMaps": true, // should CatMagick add source maps after transforming .jsx files to .js, defaults to true
+  "hotReload": true, // автоматически замечать изменения в Ваших routes или databases и делать частичную перезагрузку, по умолчанию true
+  "sourceMaps": true, // нужно-ли CatMagick добавлять исходные карты после превращения .jsx файлов в .js, по умолчанию true
   "database": true, // необходима-ли Вам база данных в Вашем проекте, по умолчанию false
-  "databaseType": "sqlite", // what database do you want, sqlite is the most easy one for beginners to setup, defaults to sqlite, you must install your database's package for it to work
+  "databaseType": "sqlite", // какую базу данных Вы хотите, sqlite самый лёгкий вариант для настройки новичкам, по умолчанию sqlite, Вы должны установить модуль Вашей базы данных что-бы она работала
   "databaseFile": "database.db", // если Вы используете sqlite, в какой файл он должен сохранять, по умолчанию database.db
-  "sessionSecret": "p2ssw0rd!", // if your project requires sessions to authorize the user, make a secure password for encrypting them, no default
-  "secureCookie": false // if your cookies should be HTTPS, defaults to true, you must disable it if you're using HTTP, or your sessions may not work
+  "sessionSecret": "p2ssw0rd!", // если Вашему проекту нужны сессии для авторизации пользователя, придумайте сложный пароль для их шифрования, по умолчанию без сессий
+  "secureCookie": false // должны-ли Ваши куки быть HTTPS, по умолчанию true, отключите это при использовании HTTP, или Ваши сессии могут не работать
 }
 ```
 
