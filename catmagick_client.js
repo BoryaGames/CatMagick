@@ -144,6 +144,7 @@
       for (var elementEffects of effects.values()) {
         for (var [effectId, effect] of elementEffects.entries()) {
           if (effect[1]) {
+            elementEffects.set(effectId, [effect[0], null, null]);
             elementEffects.set(effectId, [effect[0], null, effect[1]()]);
           }
         }
