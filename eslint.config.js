@@ -1,8 +1,25 @@
-import { defineConfig } from "eslint/config";
-import js from "@eslint/js";
+var { defineConfig } = require("eslint/config");
+var js = require("@eslint/js");
+var globals = require("globals");
 
-export default defineConfig([{
-	"files": ["catmagick_server.js", "catmagick_client.js"],
-	"plugins": { js },
-	"extends": ["js/recommended"]
+module.exports = defineConfig([{
+  "files": ["catmagick_server.js"],
+  "plugins": { js },
+  "extends": ["js/recommended"],
+  "languageOptions": {
+		"sourceType": "commonjs",
+    "globals": {
+      ...globals.node
+		}
+	}
+}, {
+  "files": ["catmagick_client.js"],
+  "plugins": { js },
+  "extends": ["js/recommended"],
+  "languageOptions": {
+		"sourceType": "script",
+    "globals": {
+			...globals.browser
+		}
+	}
 }]);
