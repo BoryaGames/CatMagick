@@ -477,7 +477,9 @@ if (config.hotReload) {
         try {
           await dataSource.destroy();
           log("INFO", "Database disconnected due to hot reload");
-        } catch {}
+        } catch {
+          // Database might be in connecting state, we ignore that
+        }
       }
       if (configureDatabase(!0)) {
         dataSource.initialize().then(() => {
