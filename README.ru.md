@@ -62,7 +62,7 @@ CatMagick требует `config.json` файл в корне Вашего пр�
   "sourceMaps": true, // should CatMagick add source maps after transforming .jsx files to .js, defaults to true
   "database": true, // необходима-ли Вам база данных в Вашем проекте, по умолчанию false
   "databaseType": "sqlite", // what database do you want, sqlite is the most easy one for beginners to setup, defaults to sqlite, you must install your database's package for it to work
-  "databaseFile": "database.db", // if you use sqlite, what file should it save to, defaults to database.db
+  "databaseFile": "database.db", // если Вы используете sqlite, в какой файл он должен сохранять, по умолчанию database.db
   "sessionSecret": "p2ssw0rd!", // if your project requires sessions to authorize the user, make a secure password for encrypting them, no default
   "secureCookie": false // if your cookies should be HTTPS, defaults to true, you must disable it if you're using HTTP, or your sessions may not work
 }
@@ -70,24 +70,24 @@ CatMagick требует `config.json` файл в корне Вашего пр�
 
 ## Использование
 
-Once you have made your `config.json`, create `routes` and `middleware` folders, if you use a database - you also need to create a `databases` folder.
+После того как Вы сделали свой `config.json`, создайте папки `routes` и `middleware`, а если Вы используете базу данных - Вам так-же нужно создать папку `databases`.
 
-Now, go to your `routes` folder and just add `index.html` to it, start your project and go to your website - you will see your HTML there.
+Теперь, перейдите в Вашу папку `routes` и просто добавьте `index.html` в неё, запустите свой проект и перейдите на свой сайт - Вы увидите свой HTML там.
 
-While that may look as normal HTML, CatMagick already injected itself there.
+Это может показаться как обычный HTML, но CatMagick уже встроил себя в него.
 
-Now, add `<script src="/app.jsx"></script>` to your HTML and go to a new file `app.jsx` inside your `routes` folder.
+А теперь, добавьте `<script src="/app.jsx"></script>` в Ваш HTML и перейдите в новый файл `app.jsx` в Вашей папке `routes`.
 
-By default, CatMagick renders component called `Root`, so let's make it:
+По умолчанию, CatMagick отображает компонент под названием `Root`, так-что давайте сделаем его:
 
 ```jsx
 new class Root extends CatMagick.Component {
   render() {
-    return <h1>Meow!</h1>;
+    return <h1>Мяу!</h1>;
   }
 }
 ```
 
-You can now see this `<h1>` on your website - it means CatMagick works! :tada:
+Теперь Вы увидите этот `<h1>` на Вашем вебсайте - это означает CatMagick работает! :tada:
 
-### *DOCUMENTATION IS IN W.I.P*
+### *ДОКУМЕНТАЦИЯ В ПРОГРЕССЕ*
