@@ -7,19 +7,19 @@ module.exports = defineConfig([{
   "plugins": { js },
   "extends": ["js/recommended"],
   "languageOptions": {
-		"sourceType": "commonjs",
+    "sourceType": "commonjs",
     "globals": {
       ...globals.node
-		}
-	}
+    }
+  }
 }, {
   "files": ["catmagick_client.js"],
   "plugins": { js },
   "extends": ["js/recommended"],
   "languageOptions": {
-		"sourceType": "script",
+    "sourceType": "script",
     "globals": {
-			...globals.browser
-		}
-	}
+      ...globals.browser
+    }
+  }
 }]);
