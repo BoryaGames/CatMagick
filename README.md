@@ -58,7 +58,7 @@ CatMagick requires a `config.json` file in root of your project to start. While 
   "sslProxy": true, // if your website is working on http, but there's some proxy (example, CloudFlare) adding a SSL in between, then set this option to true
   "logRequests": true, // log all requests to console or not, defaults to true
   "logWebSocket": true, // log all websocket connections or disconnections to console, defaults to true
-  "hotReload": true, // automatically detect changes in your routes or database files and perform a partial reload, defaults to true
+  "hotReload": true, // automatically detect changes in your routes or databases and perform a partial reload, defaults to true
   "sourceMaps": true, // should CatMagick add source maps after transforming .jsx files to .js, defaults to true
   "database": true, // do you need a database in your project, defaults to false
   "databaseType": "sqlite", // what database do you want, sqlite is the most easy one for beginners to setup, defaults to sqlite, you must install your database's package for it to work
