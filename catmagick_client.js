@@ -313,7 +313,9 @@
       }
       path = new URL(path);
       path = `${path.pathname}${path.search}${path.hash}`;
-    } catch {}
+    } catch {
+      // This path is not a full url then
+    }
     history.pushState(null, null, path);
     for (var route of Object.keys(routes)) {
       var match = (new URL(location.origin + path)).pathname.match(createPathnameRegExp(route));
@@ -454,9 +456,13 @@
       if (event.data === "PONG") {
         return debugLog("WebSocket ping-pong completed.");
       }
-      var message = JSON.parse(pako.inflate(event.data, {
-        "to": "string"
-      }));
+      try {
+        var message = JSON.parse(pako.inflate(event.data, {
+          "to": "string"
+        }));
+      } catch {
+        return debugLog("Received invalid message from server.");
+      }
       for (var elementEvents of events.values()) {
         for (var elementEvent of elementEvents.values()) {
           if (message[0] == elementEvent[0]) {
