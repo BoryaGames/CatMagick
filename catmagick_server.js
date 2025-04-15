@@ -218,7 +218,7 @@ function configureDatabase(hotReload) {
     databaseEntities = Object.fromEntries(entities.map(entity => [entity.options.name, entity]));
   } catch(error) {
     if (error instanceof typeorm.DriverPackageNotInstalledError) {
-      log("FATAL", `You are using ${error.message.match(/^([A-Za-z0-9_\-]+) package has not been found installed/)[1]} database, but "${error.message.match(/npm install ([A-Za-z0-9_\-]+) \-\-save/)[1]}" is not installed`);
+      log("FATAL", `You are using ${error.message.match(/^([A-Za-z0-9_-]+) package has not been found installed/)[1]} database, but "${error.message.match(/npm install ([A-Za-z0-9_-]+) --save/)[1]}" is not installed`);
       process.exit(1);
     }
     log("FATAL", "Could not configure database due to the following error:");
@@ -286,7 +286,7 @@ server.use((req, res, next) => {
         "302": "Found",
         "304": "Not Modified",
         "307": "Temporary Redirect",
-        "307": "Permanent Redirect",
+        "308": "Permanent Redirect",
         "400": "Bad Request",
         "401": "Unauthorized",
         "402": "Payment Required",
