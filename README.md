@@ -5,7 +5,7 @@
 ![Contributors](https://img.shields.io/github/contributors/BoryaGames/CatMagick)
 ![Chat on Discord](https://img.shields.io/discord/916772281747931198?logo=discord)
 
-**[English]** | [[Russian]](./README.ru.md)
+**[English]** | [[Русский]](./README.ru.md)
 
 CatMagick is a framework designed to make websites easily (both frontend and backend!).
 
