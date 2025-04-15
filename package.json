@@ -1,10 +1,10 @@
 {
   "name": "catmagick",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "CatMagick is a framework to make websites easily.",
   "main": "catmagick_server.js",
   "scripts": {
-    "test": "echo There is no tests at the moment."
+    "test": "eslint catmagick_server.js catmagick_client.js"
   },
   "repository": {
     "type": "git",
@@ -41,5 +41,8 @@
     "chokidar": "^4.0.3",
     "pako": "^2.1.0",
     "typeorm": "^0.3.22"
+  },
+  "devDependencies": {
+    "eslint": "^9.24.0"
   }
 }
