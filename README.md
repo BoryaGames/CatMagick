@@ -35,7 +35,7 @@ npm install catmagick
 npm install git+https://github.com/BoryaGames/CatMagick.git
 ```
 
-To run your project, you just need to require it.
+To run your project, you just need to `require()` it.
 
 ```sh
 # Do it directly
