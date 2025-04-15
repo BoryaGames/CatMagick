@@ -19,7 +19,8 @@ module.exports = defineConfig([{
   "languageOptions": {
     "sourceType": "script",
     "globals": {
-      ...globals.browser
+      ...globals.browser,
+      "pako": "readonly"
     }
   }
 }]);
