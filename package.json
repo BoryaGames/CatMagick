@@ -43,6 +43,7 @@
     "typeorm": "^0.3.22"
   },
   "devDependencies": {
-    "eslint": "^9.24.0"
+    "eslint": "^9.24.0",
+    "globals": "^16.0.0"
   }
 }
