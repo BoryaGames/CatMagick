@@ -4,7 +4,7 @@
   "description": "CatMagick is a framework to make websites easily.",
   "main": "catmagick_server.js",
   "scripts": {
-    "test": "eslint catmagick_server.js catmagick_client.js"
+    "test": "eslint"
   },
   "repository": {
     "type": "git",
