@@ -146,4 +146,98 @@ new class Root extends CatMagick.Component {
 
 Debug mode will output extra logs to the console: when render is happening, how much time did it took, state of the WebSocket, router logs and more.
 
+### Saving state
+
+Let's make a simple page with three buttons using custom components.
+
+```jsx
+new class Root extends CatMagick.Component {
+  render() {
+    return (
+      <>
+        <MyButton /> <MyButton /> <MyButton />
+      </>
+    );
+  }
+}
+
+new class MyButton extends CatMagick.Component {
+  render() {
+    function btnClicked() {
+      // We need to increment clicks
+    }
+
+    // "click" is an attribute to listen for click event
+    return <button click={btnClicked}>Clicks: 0</button>;
+  }
+}
+```
+
+We want to be able to see amount of clicks on the button. Let's try something:
+
+```jsx
+new class MyButton extends CatMagick.Component {
+  render() {
+    var clicks = 0;
+
+    function btnClicked() {
+      clicks++;
+    }
+
+    return <button click={btnClicked}>Clicks: {clicks}</button>;
+  }
+}
+```
+
+Nope, clicks variable is being reset back to 0 on every render, as it's inside the render function. Maybe let's move it outside?
+
+```jsx
+var clicks = 0;
+
+new class MyButton extends CatMagick.Component {
+  render() {
+    function btnClicked() {
+      clicks++;
+    }
+
+    return <button click={btnClicked}>Clicks: {clicks}</button>;
+  }
+}
+```
+
+Well, we still have two problems:
+
+1) We have any amount of buttons (for example, 3 here), but only one variable.
+
+2) Even though we changing the `clicks` variable, we do not update the on-screen data, so the user doesn't see the new amount.
+
+The best way to solve this is using a *hook* called `useState`.
+
+```jsx
+new class MyButton extends CatMagick.Component {
+  render() {
+    // "clicks" is the variable itself here, but to change it we must use a setter called "setClicks", and 0 is value of our variable
+    var [clicks, setClicks] = useState(0);
+
+    function btnClicked() {
+      // We increment our variable
+      setClicks(clicks + 1);
+    }
+
+    return <button click={btnClicked}>Clicks: {clicks}</button>;
+  }
+}
+```
+
+This *hook* will automatically save everything, it works with multiple instances of the component and also automatically updates the screen!
+
+> ⚠️ Hook - is a function that is supposed to execute the same time and same amount of times every render. ⚠️
+> ```jsx
+  if (someCondition) {
+    var [clicks, setClicks] = useState(0);
+  }
+  ```
+> This hook can be called 0 or 1 times depending on the condition, that's a **WRONG** usage and may cause your variables not to save or replace other variables.
+
+
 ### *DOCUMENTATION IS IN W.I.P*
