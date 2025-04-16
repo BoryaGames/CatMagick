@@ -372,6 +372,12 @@
     });
   };
 
+  CatMagick.handleLink = event => {
+    event.preventDefault();
+    event.stopPropagation();
+    CatMagick.goto(event.target.href);
+  };
+
   CatMagick.rerender = () => {
     render(!0);
   };
