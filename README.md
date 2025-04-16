@@ -316,7 +316,7 @@ console.log(1);
 
 2) `2` is being printed to the console only after full render is done.
 
-3) `num = 3` - num has changed, `3` is being printed to the console as effect is doing it's clean-up.
+3) `num = 3` - num has changed, `3` is being printed to the console as previous effect is doing it's clean-up.
 
 4) Then, `1` is being printed to the console.
 
@@ -372,7 +372,7 @@ CatMagick.goto("/login");
 
 This is the simplest use of CatMagick's router - it will automatically do a GET request to that page, do a clean-up for all current effects and replace current HTML with that page.
 
-Sometimes, this just doesn't work correctly or you want to be even faster.
+Sometimes, this just doesn't work correctly or you want to be even faster - then you can merge pages into a single page.
 
 ```jsx
 new class Main extends CatMagick.Component {

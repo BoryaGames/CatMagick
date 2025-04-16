@@ -316,7 +316,7 @@ console.log(1);
 
 2) `2` пишется в консоль только после того, как полный рендер был закончен.
 
-3) `num = 3` - num изменился, `3` пишется в консоль так-как прошлый эффект делает свою очистку.
+3) `num = 3` - num изменился, `3` пишется в консоль так-как предыдущий эффект делает свою очистку.
 
 4) Затем, `1` пишется в консоль.
 
@@ -364,25 +364,25 @@ CatMagick.rerender();
 
 ### Роутер
 
-Your application can be multi-page, but transition between them is not really fast.
+Ваш вебсайт может-быть мульти-страничным, но переход между ними не особо быстрый.
 
 ```jsx
 CatMagick.goto("/login");
 ```
 
-This is the simplest use of CatMagick's router - it will automatically do a GET request to that page, do a clean-up for all current effects and replace current HTML with that page.
+Это самое простое использование роутера CatMagick - он автоматически сделает GET запрос на ту страницу, сделает полную очистку для всех текущих эффектов и заменит текущий HTML на ту страницу.
 
-Sometimes, this just doesn't work correctly or you want to be even faster.
+Иногда, это просто не работает правильно или Вы хотите быть ещё быстрее - тогда Вы можете соединить несколько страниц в одну страницу.
 
 ```jsx
 new class Main extends CatMagick.Component {
   render() {
     return (
       <>
-        <h1>This is the main page.</h1>
+        <h1>Это главная страница.</h1>
         <br />
-        // CatMagick.handleLink is a function that automatically replaces your <a> link with CatMagick.goto(href)
-        <a href="/login" click={CatMagick.handleLink}>Go to login</a>
+        // CatMagick.handleLink это функция которая автоматически заменяет Вашу <a> ссылку на CatMagick.goto(href)
+        <a href="/login" click={CatMagick.handleLink}>Перейти на вход</a>
       </>
     );
   }
@@ -392,7 +392,7 @@ new class Login extends CatMagick.Component {
   render() {
     return (
       <>
-        <h1>This is the login page.</h1>
+        <h1>Это страница входа.</h1>
       </>
     );
   }
@@ -402,6 +402,6 @@ CatMagick.route("/", "Main");
 CatMagick.route("/login", "Login");
 ```
 
-Router will handle fast transition to that link and also browser's back/forward buttons.
+Роутер автоматичвски займётся быстрым переходим на ту страницу, а так-же кнопками назад/вперёд браузера.
 
 ### *ДОКУМЕНТАЦИЯ В ПРОГРЕССЕ*
