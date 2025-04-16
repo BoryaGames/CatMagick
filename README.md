@@ -57,7 +57,7 @@ CatMagick requires a `config.json` file in root of your project to start. While 
   "proxies": 1, // number of proxies before your website (example, CloudFlare), required to correctly detect IP-addresses under proxies
   "sslProxy": true, // if your website is working on http, but there's some proxy (example, CloudFlare) adding a SSL in between, then set this option to true
   "logRequests": true, // log all requests to console or not, defaults to true
-  "logWebSocket": true, // log all websocket connections or disconnections to console, defaults to true
+  "logWebSocket": true, // log all WebSocket connections or disconnections to console, defaults to true
   "hotReload": true, // automatically detect changes in your routes or databases and perform a partial reload, defaults to true
   "sourceMaps": true, // should CatMagick add source maps after transforming .jsx files to .js, defaults to true
   "database": true, // do you need a database in your project, defaults to false
@@ -69,6 +69,8 @@ CatMagick requires a `config.json` file in root of your project to start. While 
 ```
 
 ## Usage
+
+### First component
 
 Once you have made your `config.json`, create `routes` and `middleware` folders, if you use a database - you also need to create a `databases` folder.
 
@@ -89,5 +91,59 @@ new class Root extends CatMagick.Component {
 ```
 
 You can now see this `<h1>` on your website - it means CatMagick works! :tada:
+
+### Making multiple components
+
+```jsx
+new class Root extends CatMagick.Component {
+  render() {
+    return (
+      // Use empty tag <>something</> to combine multiple components into one root component
+      <>
+        <h1>Meow!</h1>
+        // Self-closing <tag />
+        <br />
+        // "color" is an attribute
+        <MyComponent color="red">
+          // Content of your component
+          World
+        </MyComponent>
+      </>
+    );
+  }
+}
+
+// Your own component
+new class MyComponent extends CatMagick.Component {
+  render() {
+    // To add custom CSS styles, the most easy way to use "style" attribute, and it's value is a JavaScript object
+    // useAttribute(name) just returns the attribute value
+    return <p style={{
+      "color": useAttribute("color")
+    }}>
+      // Use {something} syntax to insert JavaScript variables inside HTML tags
+      // useContent() just returns the content inside your component (in this case, "World")
+      Hello, {useContent()}!
+    </p>;
+  }
+}
+```
+
+### Debug mode
+
+When debugging, *debug mode* can be a useful feature for you.
+
+```jsx
+// Enable debug mode
+CatMagick.debug = true;
+
+new class Root extends CatMagick.Component {
+  render() {
+    return <h1>Meow!</h1>;
+  }
+}
+```
+
+Debug mode will output extra logs to the console: when render is happening, how much time did it took, state of the WebSocket, router logs and more.
 
 ### *DOCUMENTATION IS IN W.I.P*
