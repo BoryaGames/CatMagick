@@ -189,7 +189,7 @@ new class MyButton extends CatMagick.Component {
 }
 ```
 
-Nope, clicks variable is being reset back to 0 on every render, as it's inside the render function. Maybe let's move it outside?
+Nope, `clicks` variable is being reset back to 0 on every render, as it's inside the `render()` function. Maybe let's move it outside?
 
 ```jsx
 var clicks = 0;
@@ -238,6 +238,5 @@ This *hook* will automatically save everything, it works with multiple instances
 >   }
 > ```
 > This hook can be called 0 or 1 times depending on the condition, that's a **WRONG** usage and may cause your variables not to save or replace other variables.
-
 
 ### *DOCUMENTATION IS IN W.I.P*

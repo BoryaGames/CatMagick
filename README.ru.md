@@ -146,4 +146,97 @@ new class Root extends CatMagick.Component {
 
 Режим отладки будет выводить дополнительные логи в консоль: когда происходит рендер, сколько времени он занял, состояние WebSocket, логи роутера и другое.
 
+### Сохранение состояния
+
+Давайте сделаем простую страницу с тремя кнопками используя пользовательские компоненты.
+
+```jsx
+new class Root extends CatMagick.Component {
+  render() {
+    return (
+      <>
+        <MyButton /> <MyButton /> <MyButton />
+      </>
+    );
+  }
+}
+
+new class MyButton extends CatMagick.Component {
+  render() {
+    function btnClicked() {
+      // Нужно увеличить количество нажатий
+    }
+
+    // "click" это аттрибут что-бы слушать событие нажатия
+    return <button click={btnClicked}>Нажатий: 0</button>;
+  }
+}
+```
+
+Мы хотим видеть количество нажатий на кнопке. Давайте попробуем что-нибудь:
+
+```jsx
+new class MyButton extends CatMagick.Component {
+  render() {
+    var clicks = 0;
+
+    function btnClicked() {
+      clicks++;
+    }
+
+    return <button click={btnClicked}>Нажатий: {clicks}</button>;
+  }
+}
+```
+
+Не-а, переменная `clicks` сбрасывается обратно до 0 на каждом рендере, так-как она внутри функции `render()`. Может-быть поставим её снаружи?
+
+```jsx
+var clicks = 0;
+
+new class MyButton extends CatMagick.Component {
+  render() {
+    function btnClicked() {
+      clicks++;
+    }
+
+    return <button click={btnClicked}>Нажатий: {clicks}</button>;
+  }
+}
+```
+
+Ну, у нас всё ещё две проблемы:
+
+1) Мы имеем любое количество кнопок (например, здесь 3), но только одну переменную.
+
+2) Даже изменяя переменную `clicks`, мы не обновляем данные на экране, так-что пользователь не видит новое число.
+
+Лучший способ исправить их используя *крюк* под названием `useState`.
+
+```jsx
+new class MyButton extends CatMagick.Component {
+  render() {
+    // "clicks" это сама переменная здесь, но что-бы изменять её мы используем сеттер под названием "setClicks", и 0 это значение нашей переменной
+    var [clicks, setClicks] = useState(0);
+
+    function btnClicked() {
+      // Мы увеличиваем нашу переменную
+      setClicks(clicks + 1);
+    }
+
+    return <button click={btnClicked}>Нажатий: {clicks}</button>;
+  }
+}
+```
+
+Этот *крюк* автоматически сохранит всё, он работает с несколькими копиями компонента и автоматически обновляет экран!
+
+> ⚠️ Крюк - это функция которая должна вызываться в одинаковое время и одинаковое количество раз каждый рендер.
+> ```jsx
+>   if (какоелибоУсловие) {
+>     var [clicks, setClicks] = useState(0);
+>   }
+> ```
+> Этот крюк может-быть вызван 0 или 1 раз в зависимости от условия, это **НЕПРАВИЛЬНОЕ** использование и может привести к не сохранению Вашей переменной или замене других переменных.
+
 ### *ДОКУМЕНТАЦИЯ В ПРОГРЕССЕ*
