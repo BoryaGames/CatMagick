@@ -239,4 +239,169 @@ This *hook* will automatically save everything, it works with multiple instances
 > ```
 > This hook can be called 0 or 1 times depending on the condition, that's a **WRONG** usage and may cause your variables not to save or replace other variables.
 
+### Saving heavy computations
+
+There's two hooks made for heavy computations and other uses.
+
+```jsx
+var [num, setNum] = useState(0);
+
+// Pretend this is a heavy computation
+var value = (num ** 2);
+```
+
+We do not want to compute `value` on every render if the `num` didn't change.
+
+```jsx
+var [num, setNum] = useState(0);
+
+// Pretend this is a heavy computation
+var value = useMemo(() => (num ** 2), [num]);
+```
+
+A hook called `useMemo` will make the computation only if `num` did change. This way if the `num = 2` on the first render, and `num = 2` on the second render - it will not call the function again, but take the same value from memory.
+
+Okay, but pretend this is a really heavy computation.
+
+```jsx
+var [num, setNum] = useState(0);
+
+// Pretend this is a really heavy computation
+var value = useCache(() => (num ** 2), [num]);
+```
+
+The `useCache` hook works the same as `useMemo`, but can store infinite amount of previous values.
+
+1) `num = 2`, it computes the value.
+
+2) `num = 2`, it takes value from memory.
+
+3) `num = 3`, it computes the new value.
+
+4) `num = 2`, and here `useMemo` will compute the value again, but `useCache` will go back and take the value from memory.
+
+### Effects
+
+Another useful hook is called an *effect*.
+
+```jsx
+useEffect(() => {
+  // An effect function
+}, [num]);
+```
+
+The `useEffect` works the same as `useMemo` - it will only call the function only if dependency array has changed.
+
+But, there's also some differences to it:
+
+1) `useEffect` doesn't return anything.
+
+2) Effect is called only AFTER the render is done.
+
+3) Effect can optionally return a clean-up function - this function calls before the effect gets called again.
+
+```jsx
+useEffect(() => {
+  console.log(2);
+
+  return () => {
+    console.log(3);
+  };
+}, [num]);
+
+console.log(1);
+```
+
+1) `num = 2`, in the first render `1` is printed to the console.
+
+2) `2` is being printed to the console only after full render is done.
+
+3) `num = 3` - num has changed, `3` is being printed to the console as effect is doing it's clean-up.
+
+4) Then, `1` is being printed to the console.
+
+5) After the render, `2` is being printed again.
+
+### Accesing the element reference
+
+Sometimes, you just want to do a simple:
+
+```jsx
+input.focus();
+```
+
+But you must get the `input` element first. And `useElement` can help with that.
+
+> `useElement` is not a hook, so you can call it safely any amount of times.
+
+```jsx
+new class Root extends CatMagick.Component {
+  render() {
+    // We create a reference to that element
+    var input = useElement();
+
+    useEffect(() => {
+      // After the render, we can focus the input using the reference we've made.
+      // Don't forget: input is a reference and not an element, you must call it first - input()
+      input().focus();
+    }, []);
+
+    // We must add the reference to "ref" attribute
+    return <input type="text" ref={input} />;
+  }
+}
+```
+
+### Re-render
+
+Sometimes you just need to force a re-render. Normally `useState` will re-render the element after it's value been changed, but if your element relies on some external data source and it changed, you need to update the screen yourself.
+
+```jsx
+CatMagick.rerender();
+```
+
+This is as simple as calling a function.
+
+### Router
+
+Your application can be multi-page, but transition between them is not really fast.
+
+```jsx
+CatMagick.goto("/login");
+```
+
+This is the simplest use of CatMagick's router - it will automatically do a GET request to that page, do a clean-up for all current effects and replace current HTML with that page.
+
+Sometimes, this just doesn't work correctly or you want to be even faster.
+
+```jsx
+new class Main extends CatMagick.Component {
+  render() {
+    return (
+      <>
+        <h1>This is the main page.</h1>
+        <br />
+        // CatMagick.handleLink is a function that automatically replaces your <a> link with CatMagick.goto(href)
+        <a href="/login" click={CatMagick.handleLink}>Go to login</a>
+      </>
+    );
+  }
+}
+
+new class Login extends CatMagick.Component {
+  render() {
+    return (
+      <>
+        <h1>This is the login page.</h1>
+      </>
+    );
+  }
+}
+
+CatMagick.route("/", "Main");
+CatMagick.route("/login", "Login");
+```
+
+Router will handle fast transition to that link and also browser's back/forward buttons.
+
 ### *DOCUMENTATION IS IN W.I.P*
