@@ -101,11 +101,11 @@ new class Root extends CatMagick.Component {
       // Use empty tag <>something</> to combine multiple components into one root component
       <>
         <h1>Meow!</h1>
-        // Self-closing <tag />
+        {/* Self-closing <tag /> */}
         <br />
-        // "color" is an attribute
+        {/* "color" is an attribute */}
         <MyComponent color="red">
-          // Content of your component
+          {/* Content of your component */}
           World
         </MyComponent>
       </>
@@ -121,8 +121,8 @@ new class MyComponent extends CatMagick.Component {
     return <p style={{
       "color": useAttribute("color")
     }}>
-      // Use {something} syntax to insert JavaScript variables inside HTML tags
-      // useContent() just returns the content inside your component (in this case, "World")
+      {/* Use {something} syntax to insert JavaScript variables inside HTML tags */}
+      {/* useContent() just returns the content inside your component (in this case, "World") */}
       Hello, {useContent()}!
     </p>;
   }
@@ -381,7 +381,7 @@ new class Main extends CatMagick.Component {
       <>
         <h1>This is the main page.</h1>
         <br />
-        // CatMagick.handleLink is a function that automatically replaces your <a> link with CatMagick.goto(href)
+        {/* CatMagick.handleLink is a function that automatically replaces your <a> link with CatMagick.goto(href) */}
         <a href="/login" click={CatMagick.handleLink}>Go to login</a>
       </>
     );
