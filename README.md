@@ -231,12 +231,12 @@ new class MyButton extends CatMagick.Component {
 
 This *hook* will automatically save everything, it works with multiple instances of the component and also automatically updates the screen!
 
-> ⚠️ Hook - is a function that is supposed to execute the same time and same amount of times every render. ⚠️
+> ⚠️ Hook - is a function that is supposed to execute the same time and same amount of times every render.
 > ```jsx
-  if (someCondition) {
-    var [clicks, setClicks] = useState(0);
-  }
-  ```
+>   if (someCondition) {
+>     var [clicks, setClicks] = useState(0);
+>   }
+> ```
 > This hook can be called 0 or 1 times depending on the condition, that's a **WRONG** usage and may cause your variables not to save or replace other variables.
 
 
