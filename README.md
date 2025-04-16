@@ -320,11 +320,11 @@ console.log(1);
 
 4) Then, `1` is being printed to the console.
 
-5) After the render, `2` is being printed again.
+5) After the render, `2` is being printed to the console again.
 
 ### Accesing the element reference
 
-Sometimes, you just want to do a simple:
+Sometimes, you just want to do a simple focus:
 
 ```jsx
 input.focus();
@@ -342,7 +342,7 @@ new class Root extends CatMagick.Component {
 
     useEffect(() => {
       // After the render, we can focus the input using the reference we've made.
-      // Don't forget: input is a reference and not an element, you must call it first - input()
+      // Don't forget: input is a reference and not an element, you must call it first to get the element - input()
       input().focus();
     }, []);
 
@@ -354,7 +354,7 @@ new class Root extends CatMagick.Component {
 
 ### Re-render
 
-Sometimes you just need to force a re-render. Normally `useState` will re-render the element after it's value been changed, but if your element relies on some external data source and it changed, you need to update the screen yourself.
+Sometimes you just need to force a re-render. Normally `useState` will re-render the element after it's value been changed, but if your component relies on some external data source and it changed, you need to update the screen yourself.
 
 ```jsx
 CatMagick.rerender();

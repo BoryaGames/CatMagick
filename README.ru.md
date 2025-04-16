@@ -101,11 +101,11 @@ new class Root extends CatMagick.Component {
       // Используйте пустой тег <>что-то</> для объединения нескольких компонентов в один главный компонент
       <>
         <h1>Мяу!</h1>
-        // Само-закрывающийся <тег />
+        {/* Само-закрывающийся <тег /> */}
         <br />
-        // "color" это аттрибут
+        {/* "color" это аттрибут */}
         <MyComponent color="red">
-          // Содержимое Вашего компонента
+          {/* Содержимое Вашего компонента */}
           Мир
         </MyComponent>
       </>
@@ -121,8 +121,8 @@ new class MyComponent extends CatMagick.Component {
     return <p style={{
       "color": useAttribute("color")
     }}>
-      // Используйте синтаксис {что-то} для вставки JavaScript переменных в Ваши HTML теги
-      // useContent() просто возвращает содержимое внутри Вашего компонента (в данном случае, "Мир")
+      {/* Используйте синтаксис {что-то} для вставки JavaScript переменных в Ваши HTML теги */}
+      {/* useContent() просто возвращает содержимое внутри Вашего компонента (в данном случае, "Мир") */}
       Привет, {useContent()}!
     </p>;
   }
@@ -241,64 +241,64 @@ new class MyButton extends CatMagick.Component {
 
 ### Сохранение тяжёлых вычислений
 
-There's two hooks made for heavy computations and other uses.
+Существует два крюка созданные для тяжёлых вычислений и других использований.
 
 ```jsx
 var [num, setNum] = useState(0);
 
-// Pretend this is a heavy computation
+// Представьте что это тяжёлое вычисление
 var value = (num ** 2);
 ```
 
-We do not want to compute `value` on every render if the `num` didn't change.
+Мы не хотим считать `value` на каждом рендере если `num` не изменился.
 
 ```jsx
 var [num, setNum] = useState(0);
 
-// Pretend this is a heavy computation
+// Представьте что это тяжёлое вычисление
 var value = useMemo(() => (num ** 2), [num]);
 ```
 
-A hook called `useMemo` will make the computation only if `num` did change. This way if the `num = 2` on the first render, and `num = 2` on the second render - it will not call the function again, but take the same value from memory.
+Крюк под названием `useMemo` сделает вычисление только если `num` изменился. Таким образом, если `num = 2` на первом рендере, и `num = 2` на втором рендере - оно не будет вызывать функцию снова, а возьмёт то-же значение из памяти.
 
-Okay, but pretend this is a really heavy computation.
+Окей, но представьте что это очень тяжёлое вычисление.
 
 ```jsx
 var [num, setNum] = useState(0);
 
-// Pretend this is a really heavy computation
+// Представьте что это очень тяжёлое вычисление
 var value = useCache(() => (num ** 2), [num]);
 ```
 
-The `useCache` hook works the same as `useMemo`, but can store infinite amount of previous values.
+Крюк `useCache` работает так-же, как и `useMemo`, но может хранить бесконечное количество предыдущих значений.
 
-1) `num = 2`, it computes the value.
+1) `num = 2`, он считает значение.
 
-2) `num = 2`, it takes value from memory.
+2) `num = 2`, он берёт значение из памяти.
 
-3) `num = 3`, it computes the new value.
+3) `num = 3`, он считает новое значение.
 
-4) `num = 2`, and here `useMemo` will compute the value again, but `useCache` will go back and take the value from memory.
+4) `num = 2`, и здесь `useMemo` посчитает значение снова, а `useCache` вернётся назад и возьмёт его из памяти.
 
 ### Эффекты
 
-Another useful hook is called an *effect*.
+Ещё один полезный крюк называется *эффектом*.
 
 ```jsx
 useEffect(() => {
-  // An effect function
+  // Эффект-функция
 }, [num]);
 ```
 
-The `useEffect` works the same as `useMemo` - it will only call the function only if dependency array has changed.
+`useEffect` работает так-же, как и `useMemo` - он вызовет функцию только если массив зависимостей изменился.
 
-But, there's also some differences to it:
+Но, существуют некоторые его отличия:
 
-1) `useEffect` doesn't return anything.
+1) `useEffect` ничего не возвращает.
 
-2) Effect is called only AFTER the render is done.
+2) Эффект вызывается только ПОСЛЕ того, как рендер был сделан.
 
-3) Effect can optionally return a clean-up function - this function calls before the effect gets called again.
+3) Эффект может вернуть необязательную функцию очистки - это функция, которая вызывается перед следующим вызовом эффекта.
 
 ```jsx
 useEffect(() => {
@@ -312,41 +312,41 @@ useEffect(() => {
 console.log(1);
 ```
 
-1) `num = 2`, in the first render `1` is printed to the console.
+1) `num = 2`, на первом рендере `1` пишется в консоль.
 
-2) `2` is being printed to the console only after full render is done.
+2) `2` пишется в консоль только после того, как полный рендер был закончен.
 
-3) `num = 3` - num has changed, `3` is being printed to the console as effect is doing it's clean-up.
+3) `num = 3` - num изменился, `3` пишется в консоль так-как прошлый эффект делает свою очистку.
 
-4) Then, `1` is being printed to the console.
+4) Затем, `1` пишется в консоль.
 
-5) After the render, `2` is being printed again.
+5) После рендера, `2` снова пишется в консоль.
 
-### Accesing the element reference
+### Получение ссылки на элемент
 
-Sometimes, you just want to do a simple:
+Иногда, Вы просто хотите сделать простой фокус:
 
 ```jsx
 input.focus();
 ```
 
-But you must get the `input` element first. And `useElement` can help with that.
+Но мы должны сначала получить элемент `input`. И `useElement` может с этим помочь.
 
-> `useElement` is not a hook, so you can call it safely any amount of times.
+> `useElement` это не крюк, так-что Вы можете вызывать его безопасно любое количество раз.
 
 ```jsx
 new class Root extends CatMagick.Component {
   render() {
-    // We create a reference to that element
+    // Мы создаём ссылку на элемент
     var input = useElement();
 
     useEffect(() => {
-      // After the render, we can focus the input using the reference we've made.
-      // Don't forget: input is a reference and not an element, you must call it first - input()
+      // После рендера, мы можем фокусировать поле используя ссылку, которую мы сделали.
+      // Не забываем: input это просто ссылка, а не элемент, мы должны сначала вызвать её для получения элемента - input()
       input().focus();
     }, []);
 
-    // We must add the reference to "ref" attribute
+    // Мы добавляем ссылку в аттрибут "ref"
     return <input type="text" ref={input} />;
   }
 }
@@ -354,13 +354,13 @@ new class Root extends CatMagick.Component {
 
 ### Ре-рендер
 
-Sometimes you just need to force a re-render. Normally `useState` will re-render the element after it's value been changed, but if your element relies on some external data source and it changed, you need to update the screen yourself.
+Иногда Вам необходимо сделать обязательный ре-рендер. Обычно, `useState` сделает ре-рендер элемента после того, как его значение было изменено, но если Ваш компонент зависит на каком-либо внешнем источнике информации и он изменился, Вам необходимо обновить экран самому.
 
 ```jsx
 CatMagick.rerender();
 ```
 
-This is as simple as calling a function.
+Это так-же просто, как вызов функции.
 
 ### Роутер
 
