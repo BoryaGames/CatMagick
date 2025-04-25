@@ -49,7 +49,7 @@
     return new RegExp(`^${path.replace(/\$([A-Za-z0-9]+)/g, "(?<$1>[A-Za-z0-9]+)")}$`);
   }
 
-  function render(isRoot, elements, parent) {
+  function render(isRoot, elements, parent, fake) {
     if (isRoot) {
       if (!components[rootElement]) {
         return;
@@ -84,6 +84,7 @@
         events.delete(currentPath.join(";"));
       }
       elementTypes.set(currentPath.join(";"), element.type);
+      var originalElement = element;
       if (components[element.type]) {
         currentComponent = element;
         currentStateIndex = 0;
@@ -131,8 +132,10 @@
       }
       Object.keys(element.props).forEach(key => domElement[key] = element.props[key]);
       Object.keys((element.props.style || {})).forEach(key => domElement.style[key] = (typeof element.props.style[key] === "number") ? `${element.props.style[key]}px` : element.props.style[key]);
-      render(!1, element.children, domElement);
-      parent.appendChild(domElement);
+      render(!1, element.children, domElement, (originalElement.type == "Activity" && !originalElement.props.show));
+      if (!fake) {
+        parent.appendChild(domElement);
+      }
       currentPath.pop();
     }
 
@@ -412,6 +415,16 @@
       events.set(path, new Map);
     }
     events.get(path).set(localIndex, [event, callback]);
+  }
+
+  new class Activity extends CatMagick.Component {
+    render() {
+      return [{
+        "type": "div",
+        "props": {},
+        "children": currentComponent.children
+      }];
+    }
   }
 
   window.CatMagick = CatMagick;
