@@ -42,7 +42,7 @@ To run your project, you just need to `require()` it.
 node -e "require('catmagick')"
 
 # Or make a start.js file instead
-echo "require('catmagick')" > start.js
+echo require('catmagick') > start.js
 node start.js
 ```
 
