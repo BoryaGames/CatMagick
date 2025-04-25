@@ -404,4 +404,60 @@ CatMagick.route("/login", "Login");
 
 Router will handle fast transition to that link and also browser's back/forward buttons.
 
+### Activity
+
+Sometimes you want to remove a component from the screen, but keep its current state. Or maybe you want to pre-render component in background without showing it on the screen.
+
+```jsx
+new class Root extends CatMagick.Component {
+  render() {
+    var [show, setShow] = useState(true);
+
+    return (
+      <center>
+        <div style={{
+          "display": show ? "block" : "none"
+        }}>
+          <Counter />
+        </div>
+        <br /><br />
+        <button click={() => setShow(!show)}>Show / Hide</button>
+      </center>
+    );
+  }
+}
+
+new class Counter extends CatMagick.Component {
+  render() {
+    var [count, setCount] = useState(0);
+
+    return <button click={() => {
+      setCount(count + 1);
+    }}>Count: {count}</button>;
+  }
+}
+```
+
+This will work, but even though element has `display: none;` in CSS, it's still in DOM and browser will render it in background, let's change it to built-in component `Activity`.
+
+```jsx
+new class Root extends CatMagick.Component {
+  render() {
+    var [show, setShow] = useState(true);
+
+    return (
+      <center>
+        <Activity show={show}>
+          <Counter />
+        </Activity>
+        <br /><br />
+        <button click={() => setShow(!show)}>Show / Hide</button>
+      </center>
+    );
+  }
+}
+```
+
+Now, when `show = false`, component will completely remove from the DOM, but still its `render()` function will be called, its state being remembered and its effects will still work.
+
 ### *DOCUMENTATION IS IN W.I.P*
