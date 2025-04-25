@@ -92,7 +92,9 @@
           "children": (components[element.type].render() || [])
         };
         if (element.children.length == 1) {
-          element = element.children[0];
+          if (!components[element.children[0].type]) {
+            element = element.children[0];
+          }
         } else {
           var filtered = element.children.filter(child => child.type != textElementSymbol || child.props.nodeValue.trim());
           if (filtered.length == 1) {
