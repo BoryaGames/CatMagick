@@ -42,7 +42,7 @@ npm install git+https://github.com/BoryaGames/CatMagick.git
 node -e "require('catmagick')"
 
 # Или создайте start.js файл вместо этого
-echo "require('catmagick')" > start.js
+echo require('catmagick') > start.js
 node start.js
 ```
 
