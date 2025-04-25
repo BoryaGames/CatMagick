@@ -153,10 +153,10 @@
       syncDom(virtualDom, document.body);
       debugLog(`Rendered in ${parseFloat((performance.now() - renderStarted).toFixed(1))}ms.`);
       for (var elementEffects of effects.values()) {
-        for (var [effectId, effect] of elementEffects.entries()) {
-          if (effect[1]) {
-            elementEffects.set(effectId, [effect[0], null, null]);
-            elementEffects.set(effectId, [effect[0], null, effect[1]()]);
+        for (var [effectId, effect2] of elementEffects.entries()) {
+          if (effect2[1]) {
+            elementEffects.set(effectId, [effect2[0], null, null]);
+            elementEffects.set(effectId, [effect2[0], null, effect2[1]()]);
           }
         }
       }
