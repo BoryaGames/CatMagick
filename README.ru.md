@@ -404,4 +404,60 @@ CatMagick.route("/login", "Login");
 
 Роутер автоматичвски займётся быстрым переходим на ту страницу, а так-же кнопками назад/вперёд браузера.
 
+### Компонент Activity
+
+Иногда Вы хотите убрать компонент с экрана, но сохранить его текущее состояние. Или может-быть Вы хотите отрендерить компонент заранее в фоне без показа его на экране.
+
+```jsx
+new class Root extends CatMagick.Component {
+  render() {
+    var [show, setShow] = useState(true);
+
+    return (
+      <center>
+        <div style={{
+          "display": show ? "block" : "none"
+        }}>
+          <Counter />
+        </div>
+        <br /><br />
+        <button click={() => setShow(!show)}>Показать / Скрыть</button>
+      </center>
+    );
+  }
+}
+
+new class Counter extends CatMagick.Component {
+  render() {
+    var [count, setCount] = useState(0);
+
+    return <button click={() => {
+      setCount(count + 1);
+    }}>Счёт: {count}</button>;
+  }
+}
+```
+
+Это будет работать, но даже не смотря на то, что элемент имеет `display: none;` в CSS, он всё-ещё в DOM и браузер будет рендерить его в фоне, так-что давайте заменим его на `Activity`.
+
+```jsx
+new class Root extends CatMagick.Component {
+  render() {
+    var [show, setShow] = useState(true);
+
+    return (
+      <center>
+        <Activity show={show}>
+          <Counter />
+        </Activity>
+        <br /><br />
+        <button click={() => setShow(!show)}>Показать / Скрыть</button>
+      </center>
+    );
+  }
+}
+```
+
+Теперь, когда `show = false`, компонент полностью удалится из DOM, но его функция `render()` всё ещё будет вызвана, а его состояние сохранится и его эффекты будут работать.
+
 ### *ДОКУМЕНТАЦИЯ В ПРОГРЕССЕ*
