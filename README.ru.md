@@ -549,10 +549,10 @@ module.exports = (req, res) => {
 
 > Посредники могут быть асинхронными - запрос будет ждать пока посредник закончит.
 
-All your routes and middleware will be automatically reloaded on changes, if hot-reload is enabled in config.
+Все Ваши пути и посредники могут автоматически обновлены при изменении, если горячее обновление включено в настройках.
 
-In case requested route doesn't exist, CatMagick will respond with 404. If requested route exists, but requested method doesn't, CatMagick will respond with 405. If requested route exists, but it fails due to an error, it will be reported to the console and CatMagick will respond with 500.
+В случае, если запрошенный путь не существует, CatMagick ответит 404. Если запрошенный путь существует, но запрошенный метод нет, CatMagick ответит 405. Если запрошенный путь существует, но не удался из-за ошибки, она будет отправлена в консоль и CatMagick ответит 500.
 
-If you want to make your own friendly design for errors, you can add `404.html`, `405.html`, `500.html` files in project root.
+Если Вы хотите сделать свой дружелюбный дизайн для ошибок, Вы можете добавить файлы `404.html`, `405.html`, `500.html` в корень проекта.
 
 ### *ДОКУМЕНТАЦИЯ В ПРОГРЕССЕ*
