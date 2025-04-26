@@ -404,6 +404,39 @@ CatMagick.route("/login", "Login");
 
 Router will handle fast transition to that link and also browser's back/forward buttons.
 
+The first argument to `.route` method is a path, but you can actually use patterns instead of specifying exact path.
+
+`/users/12345` - exact path
+
+`/users/$` - match anything (`/users/12345`, `/users/54321`, `/users/cat`)
+
+`/users/$id` - match anything, but save it as `id` (which you can use later)
+
+`/users/$$` - match anything, including deeper paths (`/users/12345`, `/users/54321/send`, `/users/cat/edit/confirm`)
+
+`/$?` - use a question mark to make it optional (`/`, `/home`, `/download`)
+
+`/$$?` - you can use a question mark here too (`/`, `/home`, `/download/windows`)
+
+If you want to get the current path and it's extra information - call `useLocation()` (not a hook).
+
+```jsx
+new class UserPage extends CatMagick.Component {
+  render() {
+    var location = useLocation();
+
+    // Current link is http://localhost/users/12345?show_servers=true#bio
+
+    console.log(location.pathname); // -> /users/12345
+    console.log(location.search); // -> ?show_servers=true
+    console.log(location.hash); // -> #bio
+    console.log(location.params.id); // -> 12345
+  }
+}
+
+CatMagick.route("/users/$id", "UserPage");
+```
+
 ### Activity
 
 Sometimes you want to remove a component from the screen, but keep its current state. Or maybe you want to pre-render component in background without showing it on the screen.
