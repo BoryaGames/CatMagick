@@ -397,6 +397,19 @@
     render(!0);
   };
 
+  CatMagick.fetch = (url, options) => {
+    if (!options) {
+      options = {};
+    }
+    if (typeof options.body === "object") {
+      options.headers = Object.assign({
+        "Content-Type": "application/json"
+      }, (options.headers || {}));
+      options.body = JSON.stringify(options.body);
+    }
+    return fetch(url, options);
+  };
+
   function useElement() {
     function getElement() {
       return getElement[elementContainsSymbol];
