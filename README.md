@@ -555,4 +555,85 @@ In case requested route doesn't exist, CatMagick will respond with 404. If reque
 
 If you want to make your own friendly design for errors, you can add `404.html`, `405.html`, `500.html` files in project root.
 
+### WebSocket
+
+Let's make a real-time chat app.
+
+```jax
+new class Root extends CatMagick.Component {
+  render() {
+    // We'll save messages in a state
+    var [messages, setMessages] = useState([]);
+
+    // A ref is needed to get text from input
+    var input = useElement();
+
+    useEffect(() => {
+      fetch("/api/messages").then(res => res.json()).then(res => {
+        // We got message list from server
+        setMessages(messages);
+      });
+    }, []);
+
+    function sendMessage() {
+      // Read text from the input and clear the input
+      var content = input().value;
+      input().value = "";
+
+      // This method is just like normal browser fetch(), but accepts JSON as body
+      CatMagick.fetch("/api/messages", {
+        "method": "POST",
+        "body": { content }
+      });
+    }
+
+    return (
+      <center>
+        <br />
+        <h1>Chat</h1>
+        <br />
+        {messages.map(message => <p>{message}</p>)}
+        <br /><br />
+        <input type="text" ref={input} placeholder="Text..."> <button click={sendMessage}>Send</button>
+      </center>
+    );
+  }
+}
+```
+
+```javascript
+var messages = [];
+
+exports.get = (req, res) => {
+  res.json(messages);
+};
+
+exports.post = (req, res) => {
+  // Validate content
+  if (!req.body.content) {
+    res.status(400);
+    return res.end("You need to specify content.");
+  }
+
+  messages.push(req.body.content);
+  res.status(204);
+  res.end();
+};
+```
+
+Okay, but we need to somehow update the page for every user with new message without reloading it, we can use `useEvent` hook on the client and `dispatchEvent` on the server for that.
+
+```javascript
+// Server
+CatMagick.dispatchEvent("NEW_MESSAGE", req.body.content);
+```
+
+```jsx
+// Client
+useEvent("MESSAGE_CREATE", content => {
+  // Add new message to the array
+  setMessages([...messages, content]);
+});
+```
+
 ### *DOCUMENTATION IS IN W.I.P*
