@@ -17,6 +17,7 @@ CatMagick is a framework designed to make websites easily (both frontend and bac
 - Make API by just adding files in your `routes` / `middleware` folders
 - Easily use database without knowing any SQL commands
 - No need to restart your server, it has *hot-reload* feature built-in
+- Auto rollback to working version in case of syntax error
 - CatMagick also maintains WebSocket connection between your frontend and backend at all times, so you can easily synchronize them
 - ✨ Magic ✨
 
