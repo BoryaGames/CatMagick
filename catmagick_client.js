@@ -46,7 +46,7 @@
   }
 
   function createPathnameRegExp(path) {
-    return new RegExp(`^${path.replace(/\$([A-Za-z0-9]+)/g, "(?<$1>[A-Za-z0-9]+)")}$`);
+    return new RegExp(`^${path.replace(/(\/|^)\$([A-Za-z0-9]+)(\/|$)/g, "$1(?<$2>[A-Za-z0-9-_\\$]+)$3").replace(/(\/|^)\$(\?)?(\/|$)/g, (_, prefix, optional, suffix) => `${prefix}(?:[A-Za-z0-9-_\\$]${optional ? "*" : "+"})${suffix}`).replace(/(\/|^)\$\$(\?)?(\/|$)/g, (_, prefix, optional, suffix) => `${prefix}(?:[A-Za-z0-9-_\\$/]${optional ? "*" : "+"})${suffix}`)}$`);
   }
 
   function render(isRoot, elements, parent, fake) {
@@ -305,7 +305,7 @@
     var { pathname, search, hash } = location;
     return {
       pathname, search, hash,
-      "params": routeParams
+      "params": (routeParams || {})
     };
   }
 
