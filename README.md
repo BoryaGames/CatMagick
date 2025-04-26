@@ -565,7 +565,7 @@ new class Root extends CatMagick.Component {
     // We'll save messages in a state
     var [messages, setMessages] = useState([]);
 
-    // A ref is needed to get text from input
+    // A reference is needed to get text from input
     var input = useElement();
 
     useEffect(() => {
@@ -635,5 +635,8 @@ useEvent("MESSAGE_CREATE", content => {
   setMessages([...messages, content]);
 });
 ```
+
+> `dispatchEvent` will send this event to all people - normally you only need to send it to the authorized user and not everyone else.
+> For that, there's a third argument - a function that is a condition whetever should client receive this event or not.
 
 ### *DOCUMENTATION IS IN W.I.P*
