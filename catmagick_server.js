@@ -3,14 +3,18 @@ console.clear();
 process.title = "CatMagick";
 console.log(`${chalk.cyan("-".repeat(Math.floor((process.stdout.columns - 11) / 2)))}${chalk.red.bgBlack("[CatMagick]")}${chalk.cyan("-".repeat(Math.ceil((process.stdout.columns - 11) / 2)))}`);
 log("INFO", "Starting server...");
+var fs = require("fs");
+var path = require("path");
+if (!fs.existsSync(path.join(__dirname, "..", "..", "config.json"))) {
+  log("FATAL", `There was no "config.json" file found`);
+  process.exit(1);
+}
 var config = require("../../config.json");
 var cattojs = require("catto.js");
 var chokidar = require("chokidar");
 var babel = require("@babel/core");
 var pako = require("pako");
 var typeorm = require("typeorm");
-var fs = require("fs");
-var path = require("path");
 
 config = Object.assign({
   "port": null,
