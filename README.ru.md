@@ -404,6 +404,39 @@ CatMagick.route("/login", "Login");
 
 Роутер автоматичвски займётся быстрым переходим на ту страницу, а так-же кнопками назад/вперёд браузера.
 
+Первый аргумент в методе `.route` это путь, но на самом деле Вы можете использовать шаблоны вместо указывания точного пути.
+
+`/users/12345` - точный путь
+
+`/users/$` - подходит что-угодно (`/users/12345`, `/users/54321`, `/users/cat`)
+
+`/users/$id` - подходит что-угодно, но сохранить это как `id` (который Вы можете использовать позже)
+
+`/users/$$` - подходит что-угодно, включая пути глубже (`/users/12345`, `/users/54321/send`, `/users/cat/edit/confirm`)
+
+`/$?` - используйте знак вопроса что-бы сделать это необязательным (`/`, `/home`, `/download`)
+
+`/$$?` - Вы так-же можете использовать знак вопроса и здесь тоже (`/`, `/home`, `/download/windows`)
+
+Если Вы хотите получить текущий путь и его дополнительную информацию - вызовите `useLocation()` (не крюк).
+
+```jsx
+new class UserPage extends CatMagick.Component {
+  render() {
+    var location = useLocation();
+
+    // Текущая ссылка http://localhost/users/12345?show_servers=true#bio
+
+    console.log(location.pathname); // -> /users/12345
+    console.log(location.search); // -> ?show_servers=true
+    console.log(location.hash); // -> #bio
+    console.log(location.params.id); // -> 12345
+  }
+}
+
+CatMagick.route("/users/$id", "UserPage");
+```
+
 ### Компонент Activity
 
 Иногда Вы хотите убрать компонент с экрана, но сохранить его текущее состояние. Или может-быть Вы хотите отрендерить компонент заранее в фоне без показа его на экране.
