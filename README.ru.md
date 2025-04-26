@@ -17,6 +17,7 @@ CatMagick это фреймворк сделанный для создания �
 - Делайте API просто добавляя файлы в свои папки `routes` / `middleware`
 - Легко используйте базу данных без знания любых SQL команд
 - Не надо перезагружать свой сервер, он умеет встроенную функцию *горячего обновления*
+- Автоматический откат на рабочую версию при синтаксической ошибке
 - CatMagick так-же всегда поддерживает WebSocket соединение между Вашим фронтэндом и бэкэндом, что-бы Вы могли легко синхронизировать их
 - ✨ Магия ✨
 
@@ -91,6 +92,9 @@ new class Root extends CatMagick.Component {
 ```
 
 Теперь Вы увидите этот `<h1>` на Вашем вебсайте - это означает CatMagick работает! :tada:
+
+> ⚠️ Если у Вас включена функция горячего обновления в настройках и Вы сделаете синтаксическую ошибку в JSX файле, ошибка будет написана в консоль сервера и клиент получит старую версию без ошибки и она не повлияет на Ваших пользователей.
+> Пока это может показаться полезной функцией, Вы можете быть в замешательстве почему Ваш код не обновился, если Вы не используете IDE и не смотрите в консоль сервера.
 
 ### Создание нескольких компонентов
 
@@ -492,5 +496,63 @@ new class Root extends CatMagick.Component {
 ```
 
 Теперь, когда `show = false`, компонент полностью удалится из DOM, но его функция `render()` всё ещё будет вызвана, а его состояние сохранится и его эффекты будут работать.
+
+### Объяснение сервера
+
+You add your routes in `routes` folder, but same as client router you can use patterns here too, but they're more limited.
+
+Server supports `$` folder for anything and `$id` to save it for later use.
+
+We have only made client routes, but how do we make an API routes? You just need to create a `_route.js` file in your route folder.
+
+Давайте создадим файл `routes/users/$id/_route.js`:
+
+```js
+// We got a GET request on this route
+exports.get = (req, res) => {
+  // Read saved $id from URL
+  console.log(req.params.id); // -> 12345
+
+  // Respond with JSON
+  res.json({
+    "username": "test"
+  });
+};
+
+// We got a POST request on this route
+exports.post = (req, res) => {
+  // Set status code
+  res.status(418);
+
+  // Respond with text
+  res.end("Hello, World!");
+};
+```
+
+Next, let's make a *middleware* - it's a code that runs on every single request and on every single method, and can interrupt the request before the route even gets called. Create a file in `middlewares` folder with any name you like.
+
+```js
+// The middleware function
+module.exports = (req, res) => {
+  // If the ip matches, respond with the error and stop route from executing
+  if (req.ip == "123.45.6.78") {
+    res.status(403);
+    res.end("Access Denied!");
+    return false;
+  }
+
+  // Otherwise, let's log request's ip and continue the route normally
+  console.log("Request from", req.ip);
+  return true;
+};
+```
+
+> Middleware can be asynchronous - request will wait until your middleware finishes.
+
+All your routes and middleware will be automatically reloaded on changes, if hot-reload is enabled in config.
+
+In case requested route doesn't exist, CatMagick will respond with 404. If requested route exists, but requested method doesn't, CatMagick will respond with 405. If requested route exists, but it fails due to an error, it will be reported to the console and CatMagick will respond with 500.
+
+If you want to make your own friendly design for errors, you can add `404.html`, `405.html`, `500.html` files in project root.
 
 ### *ДОКУМЕНТАЦИЯ В ПРОГРЕССЕ*
