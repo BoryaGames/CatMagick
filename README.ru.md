@@ -499,55 +499,55 @@ new class Root extends CatMagick.Component {
 
 ### Объяснение сервера
 
-You add your routes in `routes` folder, but same as client router you can use patterns here too, but they're more limited.
+Вы добавляете свои пути в папку `routes`, но так-же как и в роутере клиента Вы можете использовать шаблоны здесь тоже, но они более ограничены.
 
-Server supports `$` folder for anything and `$id` to save it for later use.
+Сервер поддерживает папку `$` для чего-угодно и `$id` для его сохранения для будущего использования.
 
-We have only made client routes, but how do we make an API routes? You just need to create a `_route.js` file in your route folder.
+Мы только сделали пути клиента, но как сделать API пути? Вам просто надо создать файл `_route.js` в папке Вашего пути.
 
 Давайте создадим файл `routes/users/$id/_route.js`:
 
 ```js
-// We got a GET request on this route
+// Мы получили GET запрос на этот путь
 exports.get = (req, res) => {
-  // Read saved $id from URL
+  // Прочитать сохранённый $id из URL
   console.log(req.params.id); // -> 12345
 
-  // Respond with JSON
+  // Ответить используя JSON
   res.json({
     "username": "test"
   });
 };
 
-// We got a POST request on this route
+// Мы получили POST запрос на этот путь
 exports.post = (req, res) => {
-  // Set status code
+  // Установить статус код
   res.status(418);
 
-  // Respond with text
-  res.end("Hello, World!");
+  // Ответить используя текст
+  res.end("Привет, Мир!");
 };
 ```
 
-Next, let's make a *middleware* - it's a code that runs on every single request and on every single method, and can interrupt the request before the route even gets called. Create a file in `middlewares` folder with any name you like.
+Затем, давайте создадим *посредник* - это код который выполняется на каждом запросе и каждом методе, и может прервать запрос до того как путь даже вызовется. Создайте файл в папке `middlewares` с любым названием что Вы хотите.
 
 ```js
-// The middleware function
+// Функция-посредник
 module.exports = (req, res) => {
-  // If the ip matches, respond with the error and stop route from executing
+  // Если айпи-адрес совпадает, ответить ошибку и остановить путь от запуска
   if (req.ip == "123.45.6.78") {
     res.status(403);
-    res.end("Access Denied!");
+    res.end("Доступ Запрещён!");
     return false;
   }
 
-  // Otherwise, let's log request's ip and continue the route normally
-  console.log("Request from", req.ip);
+  // Иначе, давайте запишем айпи-адрес запроса и продолжим путь как обычно
+  console.log("Запрос от", req.ip);
   return true;
 };
 ```
 
-> Middleware can be asynchronous - request will wait until your middleware finishes.
+> Посредники могут быть асинхронными - запрос будет ждать пока посредник закончит.
 
 All your routes and middleware will be automatically reloaded on changes, if hot-reload is enabled in config.
 
