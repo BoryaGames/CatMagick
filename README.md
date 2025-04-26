@@ -92,6 +92,9 @@ new class Root extends CatMagick.Component {
 
 You can now see this `<h1>` on your website - it means CatMagick works! :tada:
 
+> ⚠️ If you have hot-reload enabled in config and make a syntax error inside a JSX file, the error will be printed in the server console and the client will receive old version before an error and your users will not be affected.
+> While that may seem as a useful feature, you may be confused why your code did not update if you're not looking in server's console.
+
 ### Making multiple components
 
 ```jsx
@@ -492,5 +495,63 @@ new class Root extends CatMagick.Component {
 ```
 
 Now, when `show = false`, component will completely remove from the DOM, but still its `render()` function will be called, its state being remembered and its effects will still work.
+
+### Server explanation
+
+You add your routes in `routes` folder, but same as client router you can use patterns here too, but they're more limited.
+
+Server supports `$` folder for anything and `$id` to save it for later use.
+
+We have only made client routes, but how do we make an API routes? You just need to create a `_route.js` file in your route folder.
+
+Let's create a `routes/users/$id/_route.js` file:
+
+```js
+// We got a GET request on this route
+exports.get = (req, res) => {
+  // Read saved $id from URL
+  console.log(req.params.id); // -> 12345
+
+  // Respond with JSON
+  res.json({
+    "username": "test"
+  });
+};
+
+// We got a POST request on this route
+exports.post = (req, res) => {
+  // Set status code
+  res.status(418);
+
+  // Respond with text
+  res.end("Hello, World!");
+};
+```
+
+Next, let's make a *middleware* - it's a code that runs on every single request and on every single method, and can interrupt the request before the route even gets called. Create a file in `middlewares` folder with any name you like.
+
+```js
+// The middleware function
+module.exports = (req, res) => {
+  // If the ip matches, respond with the error and stop route from executing
+  if (req.ip == "123.45.6.78") {
+    res.status(403);
+    res.end("Access Denied!");
+    return false;
+  }
+
+  // Otherwise, let's log request's ip and continue the route normally
+  console.log("Request from", req.ip);
+  return true;
+};
+```
+
+> Middleware can be asynchronous - request will wait until your middleware finishes.
+
+All your routes and middleware will be automatically reloaded on changes, if hot-reload is enabled in config.
+
+In case requested route doesn't exist, CatMagick will respond with 404. If requested route exists, but requested method doesn't, CatMagick will respond with 405. If requested route exists, but it fails due to an error, it will be reported to the console and CatMagick will respond with 500.
+
+If you want to make your own friendly design for errors, you can add `404.html`, `405.html`, `500.html` files in project root.
 
 ### *DOCUMENTATION IS IN W.I.P*
