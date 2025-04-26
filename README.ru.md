@@ -555,4 +555,88 @@ module.exports = (req, res) => {
 
 Если Вы хотите сделать свой дружелюбный дизайн для ошибок, Вы можете добавить файлы `404.html`, `405.html`, `500.html` в корень проекта.
 
+### WebSocket
+
+Давайте сделаем приложение чата в реальном времени.
+
+```jax
+new class Root extends CatMagick.Component {
+  render() {
+    // Мы сохраним сообщения в состоянии
+    var [messages, setMessages] = useState([]);
+
+    // Ссылка нужна что-бы получить текст из поля ввода
+    var input = useElement();
+
+    useEffect(() => {
+      fetch("/api/messages").then(res => res.json()).then(res => {
+        // Мы получили список сообщений с сервера
+        setMessages(messages);
+      });
+    }, []);
+
+    function sendMessage() {
+      // Прочитать текст с поля ввода и очистить поле ввода
+      var content = input().value;
+      input().value = "";
+
+      // Этот метод как обычный fetch() браузера, но так-же принимает JSON в body
+      CatMagick.fetch("/api/messages", {
+        "method": "POST",
+        "body": { content }
+      });
+    }
+
+    return (
+      <center>
+        <br />
+        <h1>Чат</h1>
+        <br />
+        {messages.map(message => <p>{message}</p>)}
+        <br /><br />
+        <input type="text" ref={input} placeholder="Текст..."> <button click={sendMessage}>Отправить</button>
+      </center>
+    );
+  }
+}
+```
+
+```javascript
+var messages = [];
+
+exports.get = (req, res) => {
+  res.json(messages);
+};
+
+exports.post = (req, res) => {
+  // Проверить содержимое
+  if (!req.body.content) {
+    res.status(400);
+    return res.end("Вы должны указать содержимое.");
+  }
+
+  messages.push(req.body.content);
+  res.status(204);
+  res.end();
+};
+```
+
+Окей, но нам надо как-то обновить страницу для каждого пользователя с новым сообщением без её обновления, мы можем использовать крюк `useEvent` на клиенте и `dispatchEvent` на сервере для этого.
+
+```javascript
+// Сервер
+CatMagick.dispatchEvent("NEW_MESSAGE", req.body.content);
+```
+
+```jsx
+// Клиент
+useEvent("MESSAGE_CREATE", content => {
+  // Добавить новое сообщение в массив
+  setMessages([...messages, content]);
+});
+```
+
+> `dispatchEvent` отправит это событие всем пользователям - обычно Вам нужно отправить его только авторизованному пользователю и никому больше.
+> Для этого есть третий аргумент - функция которая условие нужно-ли клиенту получить это событие или нет.
+
 ### *ДОКУМЕНТАЦИЯ В ПРОГРЕССЕ*
