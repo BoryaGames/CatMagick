@@ -534,14 +534,14 @@ Next, let's make a *middleware* - it's a code that runs on every single request 
 ```js
 // The middleware function
 module.exports = (req, res) => {
-  // If the ip matches, respond with the error and stop route from executing
+  // If the ip address matches, respond with the error and stop route from executing
   if (req.ip == "123.45.6.78") {
     res.status(403);
     res.end("Access Denied!");
     return false;
   }
 
-  // Otherwise, let's log request's ip and continue the route normally
+  // Otherwise, let's log request's ip address and continue the route normally
   console.log("Request from", req.ip);
   return true;
 };
