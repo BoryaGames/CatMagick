@@ -31,7 +31,8 @@ config = Object.assign({
   "databaseType": "sqlite",
   "databaseFile": "database.db",
   "sessionSecret": null,
-  "secureCookie": !0
+  "secureCookie": !0,
+  "SSR": false
 }, config);
 
 var CatMagick = {};
@@ -351,52 +352,54 @@ server.use((req, res, next) => {
         }
       }
       var code = fs.readFileSync(filePath).toString("utf-8");
-      var parts = code.split(/{_% ([^]+?) %_}/g);
-      var compile = "";
-      parts.forEach((part, index) => {
-        compile += ((index + 1) % 2 < 1 ? `${part}\n` : `__output += ${JSON.stringify(part)}.replace(/{_%= ([^]+?) %_}/g, (_, g) => __escape(__transform(eval(__pretransform(g))))).replace(/{_%- ([^]+?) %_}/g, (_, g) => __transform(eval(__pretransform(g))));\n`);
-      });
-      var context = vm.createContext({
-        req, console, __transform,
-        "require": Module.createRequire(path.dirname(filePath) + path.sep),
-        "__output": "",
-        "__pretransform": code => {
-          return babel.transformSync(code, {
-            "plugins": ["babel-plugin-transform-catmagick-jsx"],
-            "sourceMaps": !1
-          }).code;
-        },
-        "__escape": str => {
-          if (str === void 0) {
-            return "undefined";
+      if (config.SSR) {
+        var parts = code.split(/{_% ([^]+?) %_}/g);
+        var compile = "";
+        parts.forEach((part, index) => {
+          compile += ((index + 1) % 2 < 1 ? `${part}\n` : `__output += ${JSON.stringify(part)}.replace(/{_%= ([^]+?) %_}/g, (_, g) => __escape(__transform(eval(__pretransform(g))))).replace(/{_%- ([^]+?) %_}/g, (_, g) => __transform(eval(__pretransform(g))));\n`);
+        });
+        var context = vm.createContext({
+          req, console, __transform,
+          "require": Module.createRequire(path.dirname(filePath) + path.sep),
+          "__output": "",
+          "__pretransform": code => {
+            return babel.transformSync(code, {
+              "plugins": ["babel-plugin-transform-catmagick-jsx"],
+              "sourceMaps": !1
+            }).code;
+          },
+          "__escape": str => {
+            if (str === void 0) {
+              return "undefined";
+            }
+            if (typeof str !== "string") {
+              str = str.toString();
+            }
+            return str.split("<").join("&lt;").split(">").join("&gt;");
+          },
+          "CatMagick": {
+            "createElement": (type, props, ...children) => {
+              props = (props || {});
+              children = children.flat(Infinity).filter(child => child !== void 0 && child !== null).map(child => (typeof child === "string" || typeof child === "number") ? {
+                "type": textElementSymbol,
+                "props": {
+                  "nodeValue": child.toString()
+                },
+                "children": []
+              } : child);
+              return [{ type, props, children }];
+            }
           }
-          if (typeof str !== "string") {
-            str = str.toString();
-          }
-          return str.split("<").join("&lt;").split(">").join("&gt;");
-        },
-        "CatMagick": {
-          "createElement": (type, props, ...children) => {
-            props = (props || {});
-            children = children.flat(Infinity).filter(child => child !== void 0 && child !== null).map(child => (typeof child === "string" || typeof child === "number") ? {
-              "type": textElementSymbol,
-              "props": {
-                "nodeValue": child.toString()
-              },
-              "children": []
-            } : child);
-            return [{ type, props, children }];
-          }
+        });
+        try {
+          vm.runInContext(compile, context);
+        } catch(err) {
+          log("ERROR", `${req.path} - Cannot compile JSX due to the following error:`);
+          console.error(err.message);
+          return fallback();
         }
-      });
-      try {
-        vm.runInContext(compile, context);
-      } catch(err) {
-        log("ERROR", `${req.path} - Cannot compile JSX due to the following error:`);
-        console.error(err.message);
-        return fallback();
+        code = context.__output;
       }
-      code = context.__output;
       try {
         var compiled = babel.transformSync(code, {
           "plugins": ["babel-plugin-transform-catmagick-jsx"],
