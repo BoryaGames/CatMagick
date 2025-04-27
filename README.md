@@ -60,7 +60,7 @@ CatMagick requires a `config.json` file in root of your project to start. While 
   },
   "SSL": {
     "enabled": true, // if your website should work on https
-    "proxy": true, // if your website does not have it's own cert and key files, but there's some proxy (example, CloudFlare) adding a SSL in between, then set this option to true, make sure enabled is also true for this to work
+    "proxy": true, // if your website does not have it's own cert and key files, but there's some proxy (example, CloudFlare) adding a SSL in between, then set this option to true, make sure that enabled is also true for this to work
     "cert": "cert.pem", // if your website has SSL enabled and does not use a proxy, you need to specify the certificate file, defaults to cert.pem
     "key": "key.pem" // if your website has SSL enabled and does not use a proxy, you need to specify the certificate key file, defaults to key.pem
   },
