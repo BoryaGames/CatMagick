@@ -18,37 +18,64 @@ var typeorm = require("typeorm");
 var vm = require("vm");
 var Module = require("module");
 
-config = Object.assign({
-  "port": null,
-  "domain": null,
-  "proxies": 0,
-  "sslProxy": false,
-  "logRequests": !0,
-  "logWebSocket": !0,
-  "hotReload": !0,
-  "sourceMaps": !0,
-  "database": !1,
-  "databaseType": "sqlite",
-  "databaseFile": "database.db",
-  "sessionSecret": null,
-  "secureCookie": !0,
-  "SSR": false
-}, config);
+var defaultConfig = {
+  "web": {
+    "port": null,
+    "domain": null,
+    "proxies": 0
+  },
+  "SSL": {
+    "enabled": !1,
+    "proxy": !1,
+    "cert": "cert.pem",
+    "key": "key.pem"
+  },
+  "logs": {
+    "requests": !0,
+    "WebSocket": !0,
+  },
+  "database": {
+    "enabled": !1,
+    "type": "sqlite",
+    "file": "database.db"
+  },
+  "features": {
+    "sourceMaps": !0,
+    "SSR": !1
+  },
+  "hotReload": {
+    "routes": !0,
+    "middleware": !0,
+    "database": !0
+  },
+  "sessions": {
+    "secret": null,
+    "secureCookie": !0
+  }
+};
+
+config = Object.assign(defaultConfig, config);
+Object.keys(config).forEach(category => {
+  config[category] = Object.assign(defaultConfig[category], config[category]);
+});
 
 var CatMagick = {};
 var options = {
-  "proxies": config.proxies,
-  "sslProxy": config.sslProxy,
-  "secureCookie": config.secureCookie
+  "proxies": config.web.proxies,
+  "ssl": (config.SSL.enabled && !config.SSL.proxy),
+  "cert": config.SSL.cert,
+  "key": config.SSL.key,
+  "sslProxy": (config.SSL.enabled && config.SSL.proxy),
+  "secureCookie": config.sessions.secureCookie
 };
-if (config.port) {
-  options.port = config.port;
+if (config.web.port) {
+  options.port = config.web.port;
 }
-if (config.domain) {
-  options.domain = config.domain;
+if (config.web.domain) {
+  options.domain = config.web.domain;
 }
-if (config.sessionSecret) {
-  options.secret = config.sessionSecret;
+if (config.sessions.sessionSecret) {
+  options.secret = config.sessions.sessionSecret;
 }
 var server = new cattojs.Server(options);
 var compileCache = {};
@@ -217,8 +244,8 @@ function configureDatabase(hotReload) {
     }
     entities = entities.filter(entity => entity instanceof typeorm.EntitySchema);
     dataSource = new typeorm.DataSource({
-      "type": config.databaseType,
-      "database": path.join(__dirname, "..", "..", config.databaseFile),
+      "type": config.database.type,
+      "database": path.join(__dirname, "..", "..", config.database.file),
       "synchronize": !0,
       entities
     });
@@ -235,7 +262,7 @@ function configureDatabase(hotReload) {
   return !0;
 }
 
-if (config.database) {
+if (config.database.enabled) {
   configureDatabase(!1);
 }
 
@@ -280,7 +307,7 @@ server.use((req, res, next) => {
   var originalEnd = res.end;
   res.end = function() {
     originalEnd.apply(res, arguments);
-    if (config.logRequests) {
+    if (config.logs.requests) {
       var type = (res.statusCode < 400) ? "INFO" : "ERROR";
       var statusTexts = {
         "101": "Switching Protocols",
@@ -336,7 +363,7 @@ server.use((req, res, next) => {
       function fallback() {
         res.end(babel.transformSync((compileCache[filePath] || ""), {
           "plugins": ["babel-plugin-transform-catmagick-jsx"],
-          "sourceMaps": config.sourceMaps ? "inline": !1,
+          "sourceMaps": config.features.sourceMaps ? "inline": !1,
           "sourceFileName": path.basename(filePath)
         }).code);
       }
@@ -352,7 +379,7 @@ server.use((req, res, next) => {
         }
       }
       var code = fs.readFileSync(filePath).toString("utf-8");
-      if (config.SSR) {
+      if (config.features.SSR) {
         var parts = code.split(/{_% ([^]+?) %_}/g);
         var compile = "";
         parts.forEach((part, index) => {
@@ -403,7 +430,7 @@ server.use((req, res, next) => {
       try {
         var compiled = babel.transformSync(code, {
           "plugins": ["babel-plugin-transform-catmagick-jsx"],
-          "sourceMaps": config.sourceMaps ? "inline": !1,
+          "sourceMaps": config.features.sourceMaps ? "inline": !1,
           "sourceFileName": path.basename(filePath)
         }).code;
         compileCache[filePath] = code;
@@ -420,7 +447,7 @@ server.use((req, res, next) => {
   next();
 }).ws("/events", (ws, req) => {
   wsClients.push(ws);
-  if (config.logWebSocket) {
+  if (config.logs.WebSocket) {
     log("INFO", `${req.ip} - WebSocket user connected`);
   }
   ws.on("message", message => {
@@ -430,7 +457,7 @@ server.use((req, res, next) => {
   });
   ws.on("close", () => {
     wsClients = wsClients.filter(wsClient => wsClient !== ws);
-    if (config.logWebSocket) {
+    if (config.logs.WebSocket) {
       log("INFO", `${req.ip} - WebSocket user disconnected`);
     }
   });
@@ -509,7 +536,7 @@ server.use((req, res, next) => {
   log("SUCCESS", `Server is running on ${chalk.cyan.underline(`0.0.0.0:${server.options.port}`)}`);
 });
 
-if (config.database) {
+if (config.database.enabled) {
   dataSource.initialize().then(() => {
     log("SUCCESS", "Database connected successfuly");
     server.run();
@@ -521,11 +548,15 @@ if (config.database) {
   server.run();
 }
 
-if (config.hotReload) {
-  chokidar.watch([
-    path.join(__dirname, "..", "..", "middleware"),
-    path.join(__dirname, "..", "..", "routes")
-  ], {
+var watchPaths = [];
+if (config.hotReload.routes) {
+  watchPaths.push(path.join(__dirname, "..", "..", "routes"));
+}
+if (config.hotReload.middleware) {
+  watchPaths.push(path.join(__dirname, "..", "..", "middleware"));
+}
+if (watchPaths.length) {
+  chokidar.watch(watchPaths, {
     "cwd": path.join(__dirname, "..", ".."),
     "ignored": (path2, stats) => stats && stats.isFile() && path.basename(path.join(path2, "..")) != "middleware" && path.basename(path2) != "_route.js"
   }).on("change", file => {
@@ -537,35 +568,35 @@ if (config.hotReload) {
     }
     delete module.constructor._cache[require.resolve(path.join(__dirname, "..", "..", file))];
   });
+}
 
-  if (config.database) {
-    chokidar.watch(path.join(__dirname, "..", "..", "databases"), {
-      "cwd": path.join(__dirname, "..", "..", "databases"),
-      "ignoreInitial": !0
-    }).on("all", async (event, file) => {
-      if (event == "addDir" || event == "unlinkDir") {
-        return;
+if (config.database.enabled && config.hotReload.database) {
+  chokidar.watch(path.join(__dirname, "..", "..", "databases"), {
+    "cwd": path.join(__dirname, "..", "..", "databases"),
+    "ignoreInitial": !0
+  }).on("all", async (event, file) => {
+    if (event == "addDir" || event == "unlinkDir") {
+      return;
+    }
+    log("INFO", "Doing database hot reload...");
+    delete module.constructor._cache[require.resolve(path.join(__dirname, "..", "..", "databases", file))];
+    if (dataSource.isInitialized) {
+      try {
+        await dataSource.destroy();
+        log("INFO", "Database disconnected due to hot reload");
+      } catch {
+        // Database might be in connecting state, we ignore that
       }
-      log("INFO", "Doing database hot reload...");
-      delete module.constructor._cache[require.resolve(path.join(__dirname, "..", "..", "databases", file))];
-      if (dataSource.isInitialized) {
-        try {
-          await dataSource.destroy();
-          log("INFO", "Database disconnected due to hot reload");
-        } catch {
-          // Database might be in connecting state, we ignore that
-        }
-      }
-      if (configureDatabase(!0)) {
-        dataSource.initialize().then(() => {
-          log("SUCCESS", "Database hot reload completed");
-        }).catch(error => {
-          log("ERROR", "Could not connect to database due to the following error:");
-          console.error(error);
-        });
-      }
-    });
-  }
+    }
+    if (configureDatabase(!0)) {
+      dataSource.initialize().then(() => {
+        log("SUCCESS", "Database hot reload completed");
+      }).catch(error => {
+        log("ERROR", "Could not connect to database due to the following error:");
+        console.error(error);
+      });
+    }
+  });
 }
 
 CatMagick.server = server;
