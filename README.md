@@ -33,22 +33,30 @@ CatMagick Mini (no database, no hot-reload): **v11.0.0+**
 
 CatMagick Core (no database, no not-reload, no SSR): **v9.11.0+**
 
-Install it in your project using [NPM](https://www.npmjs.com) or [Yarn](https://yarnpkg.com).
+Install it in your project from [NPM Registry](https://www.npmjs.com/package/catmagick) using a package manager: [NPM](https://www.npmjs.com), [Yarn](https://yarnpkg.com) or [PNPM](https://pnpm.io).
 
 ```sh
-# Install latest stable version using NPM
+# Install latest stable version from NPM Registry using NPM
 npm install catmagick
 
-# Install latest beta version using NPM
+# Install latest beta version from NPM Registry using NPM
 npm install git+https://github.com/BoryaGames/CatMagick.git
 ```
 
 ```sh
-# Install latest stable version using Yarn
+# Install latest stable version from NPM Registry using Yarn
 yarn add catmagick
 
-# Install latest beta version using Yarn
+# Install latest beta version from NPM Registry using Yarn
 yarn add git+https://github.com/BoryaGames/CatMagick.git
+```
+
+```sh
+# Install latest stable version from NPM Registry using PNPM
+pnpm add catmagick
+
+# Install latest beta version from NPM Registry using PNPM
+pnpm add https://github.com/BoryaGames/CatMagick.git
 ```
 
 To run your project, you just need to `require()` it.
