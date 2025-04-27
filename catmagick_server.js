@@ -402,7 +402,12 @@ server.use((req, res, next) => {
         });
         var context = vm.createContext({
           req, console, __transform,
-          "require": Module.createRequire(path.dirname(filePath) + path.sep),
+          "require": (typeof Module.createRequire === "function") ? Module.createRequire(path.dirname(filePath) + path.sep) : name => {
+            if (!name.startsWith(".")) {
+              return require(name);
+            }
+            return require(path.join(path.dirname(filePath), name));
+          },
           "__output": "",
           "__pretransform": code => {
             return babel.transformSync(code, {
