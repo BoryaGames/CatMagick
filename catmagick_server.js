@@ -11,12 +11,12 @@ if (!fs.existsSync(path.join(__dirname, "..", "..", "config.json"))) {
 }
 var config = require("../../config.json");
 var cattojs = require("catto.js");
-var chokidar = require("chokidar");
 var babel = require("@babel/core");
 var pako = require("pako");
-var typeorm = require("typeorm");
 var vm = require("vm");
 var Module = require("module");
+var chokidar = null;
+var typeorm = null;
 
 var defaultConfig = {
   "web": {
@@ -59,6 +59,13 @@ config = Object.assign(defaultConfig, config);
 Object.keys(config).forEach(category => {
   config[category] = Object.assign(defaultConfig[category], config[category]);
 });
+
+if (config.hotReload.routes || config.hotReload.middleware || config.hotReload.database || config.hotReload.events) {
+  chokidar = require("chokidar");
+}
+if (config.database.enabled) {
+  typeorm = require("typeorm");
+}
 
 var CatMagick = {};
 var options = {
@@ -141,15 +148,13 @@ CatMagick.createDatabase = columns => {
 };
 
 CatMagick.Database = class {
-  #repo;
-
   constructor(name, repo) {
     this.name = name;
-    this.#repo = repo;
+    this._repo = repo;
   }
 
   async get(props) {
-    return await Promise.all((await this.#repo.findBy(props)).map(async entity => {
+    return await Promise.all((await this._repo.findBy(props)).map(async entity => {
       var entity2 = {};
       Object.defineProperty(entity2, "_props", {
         get() {
@@ -174,10 +179,10 @@ CatMagick.Database = class {
             entity[prop] = props2[prop];
           }
         }
-        await this.#repo.save(entity);
+        await this._repo.save(entity);
       };
       entity2.delete = async () => {
-        await this.#repo.remove(entity);
+        await this._repo.remove(entity);
       };
       return entity2;
     }));
@@ -191,17 +196,17 @@ CatMagick.Database = class {
         }
       }
     }
-    var entity = this.#repo.create(props);
-    await this.#repo.save(entity);
+    var entity = this._repo.create(props);
+    await this._repo.save(entity);
     return entity;
   }
 
   async delete(props) {
-    await this.#repo.delete(props);
+    await this._repo.delete(props);
   }
 
   async clear() {
-    await this.#repo.clear();
+    await this._repo.clear();
   }
 };
 
@@ -209,7 +214,11 @@ CatMagick.useDatabase = name => {
   return new CatMagick.Database(name, dataSource.getRepository(databaseEntities[name]));
 };
 
-globalThis.CatMagick = CatMagick;
+if (typeof globalThis !== "undefined") {
+  globalThis.CatMagick = CatMagick;
+} else {
+  global.CatMagick = CatMagick;
+}
 
 function configureDatabase(hotReload) {
   if (!fs.existsSync(path.join(__dirname, "..", "..", "databases"))) {
