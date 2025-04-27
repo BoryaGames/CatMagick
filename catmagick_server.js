@@ -478,7 +478,7 @@ server.use((req, res, next) => {
       var msg = JSON.parse(pako.inflate(message, {
         "to": "string"
       }));
-    } catch {
+    } catch(_) {
       if (config.logs.WebSocket) {
         log("WARN", `${req.ip} - Received invalid WebSocket packet.`);
       }
@@ -647,7 +647,7 @@ if (config.database.enabled && config.hotReload.database) {
       try {
         await dataSource.destroy();
         log("INFO", "Database disconnected due to hot reload");
-      } catch {
+      } catch(_) {
         // Database might be in connecting state, we ignore that
       }
     }
