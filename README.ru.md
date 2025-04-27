@@ -33,22 +33,30 @@ CatMagick Мини (нет базы данных, нет горячего обн
 
 CatMagick Ядро (нет базы данных, нет горячего обновления, нет SSR): **v9.11.0+**
 
-Установите его в Ваш проект используя [NPM](https://www.npmjs.com) или [Yarn](https://yarnpkg.com).
+Установите его в свой проект с [реестра NPM](https://www.npmjs.com/package/catmagick) используя менеджер пакетов: [NPM](https://www.npmjs.com), [Yarn](https://yarnpkg.com) или [PNPM](https://pnpm.io).
 
 ```sh
-# Установите последнюю стабильную версию используя NPM
+# Установите последнюю стабильную версию с реестра NPM используя NPM
 npm install catmagick
 
-# Установите последнюю бета версию используя NPM
-npm install git+https://github.com/BoryaGames/CatMagick.git
-```
-
-```sh
-# Установите последнюю стабильную версию используя Yarn
+# Установите последнюю стабильную версию с реестра NPM используя Yarn
 yarn add catmagick
 
-# Установите последнюю бета версию используя Yarn
+# Установите последнюю стабильную версию с реестра NPM используя PNPM
+pnpm add catmagick
+```
+
+Или установите последнюю бета-версию в Ваш проект с [GitHub](https://github.com/BoryaGames/CatMagick) используя менеджер пакетов: [NPM](https://www.npmjs.com), [Yarn](https://yarnpkg.com) или [PNPM](https://pnpm.io).
+
+```sh
+# Установите последнюю бета версию с GitHub используя NPM
+npm install git+https://github.com/BoryaGames/CatMagick.git
+
+# Установите последнюю бета версию с GitHub используя Yarn
 yarn add git+https://github.com/BoryaGames/CatMagick.git
+
+# Установите последнюю бета версию с GitHub используя PNPM
+pnpm add https://github.com/BoryaGames/CatMagick.git
 ```
 
 Что-бы запустить свой проект, Вам необходимо лишь `require()` его.
