@@ -46,7 +46,7 @@ yarn add catmagick
 pnpm add catmagick
 ```
 
-Or install the latest beta in your project from [GitHub](https://github.com/BoryaGames/CatMagick) using a package manager: [NPM](https://www.npmjs.com), [Yarn](https://yarnpkg.com) or [PNPM](https://pnpm.io).
+Or install the latest beta version in your project from [GitHub](https://github.com/BoryaGames/CatMagick) using a package manager: [NPM](https://www.npmjs.com), [Yarn](https://yarnpkg.com) or [PNPM](https://pnpm.io).
 
 ```sh
 # Install latest beta version from GitHub using NPM
