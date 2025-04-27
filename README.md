@@ -46,19 +46,6 @@ yarn add catmagick
 pnpm add catmagick
 ```
 
-Or install it in your project from [JSR Registry](https://jsr.io/@topcatto/catmagick) using a package manager: [Yarn](https://yarnpkg.com), [PNPM](https://pnpm.io) or [JSR](https://jsr.io).
-
-```sh
-# Install latest stable version from JSR Registry using Yarn
-yarn add jsr:@topcatto/catmagick
-
-# Install latest stable version from JSR Registry using PNPM
-pnpm add jsr:@topcatto/catmagick
-
-# Install latest stable version from JSR Registry using JSR
-npx jsr add jsr:@topcatto/catmagick
-```
-
 Or install the latest beta in your project from [GitHub](https://github.com/BoryaGames/CatMagick) using a package manager: [NPM](https://www.npmjs.com), [Yarn](https://yarnpkg.com) or [PNPM](https://pnpm.io).
 
 ```sh
