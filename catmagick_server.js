@@ -15,6 +15,8 @@ var chokidar = require("chokidar");
 var babel = require("@babel/core");
 var pako = require("pako");
 var typeorm = require("typeorm");
+var vm = require("vm");
+var Module = require("module");
 
 config = Object.assign({
   "port": null,
@@ -330,18 +332,84 @@ server.use((req, res, next) => {
     }
     if (filePath.endsWith(".jsx")) {
       res.header("Content-Type", "text/jsx; charset=UTF-8");
+      function fallback() {
+        res.end(babel.transformSync((compileCache[filePath] || ""), {
+          "plugins": ["babel-plugin-transform-catmagick-jsx"],
+          "sourceMaps": config.sourceMaps ? "inline": !1,
+          "sourceFileName": path.basename(filePath)
+        }).code);
+      }
+      var textElementSymbol = Symbol("CatMagick.TextElement");
+      function __transform(element) {
+        if (Array.isArray(element)) {
+          return element.map(__transform).join("");
+        }
+        if (element.type === textElementSymbol) {
+          return element.props.nodeValue;
+        } else {
+          return `<${element.type}${Object.keys(element.props).map(prop => ` ${prop}={${JSON.stringify(element.props[prop])}}`)}>${element.children.map(__transform).join("")}</${element.type}>`;
+        }
+      }
+      var code = fs.readFileSync(filePath).toString("utf-8");
+      var parts = code.split(/{_% (.+?) %_}/g);
+      var compile = "";
+      parts.forEach((part, index) => {
+        compile += ((index + 1) % 2 < 1 ? `${part}\n` : `__output += ${JSON.stringify(part)}.replace(/{_%= (.+?) %_}/g, (_, g) => __escape(__transform(eval(__pretransform(g))))).replace(/{_%- (.+?) %_}/g, (_, g) => __transform(eval(__pretransform(g))));\n`);
+      });
+      var context = vm.createContext({
+        req, console, __transform,
+        "require": Module.createRequire(path.dirname(filePath) + path.sep),
+        "__output": "",
+        "__pretransform": code => {
+          return babel.transformSync(code, {
+            "plugins": ["babel-plugin-transform-catmagick-jsx"],
+            "sourceMaps": !1
+          }).code;
+        },
+        "__escape": str => {
+          if (str === void 0) {
+            return "undefined";
+          }
+          if (typeof str !== "string") {
+            str = str.toString();
+          }
+          return str.split("<").join("&lt;").split(">").join("&gt;");
+        },
+        "CatMagick": {
+          "createElement": (type, props, ...children) => {
+            props = (props || {});
+            children = children.flat(Infinity).filter(child => child !== void 0 && child !== null).map(child => (typeof child === "string" || typeof child === "number") ? {
+              "type": textElementSymbol,
+              "props": {
+                "nodeValue": child.toString()
+              },
+              "children": []
+            } : child);
+            return [{ type, props, children }];
+          }
+        }
+      });
       try {
-        var compiled = babel.transformSync(fs.readFileSync(filePath).toString("utf-8"), {
+        vm.runInContext(compile, context);
+      } catch(err) {
+        log("ERROR", `${req.path} - Cannot compile JSX due to the following error:`);
+        console.error(err.message);
+        return fallback();
+      }
+      code = context.__output;
+      try {
+        var compiled = babel.transformSync(code, {
           "plugins": ["babel-plugin-transform-catmagick-jsx"],
           "sourceMaps": config.sourceMaps ? "inline": !1,
           "sourceFileName": path.basename(filePath)
         }).code;
-        compileCache[filePath] = compiled;
+        compileCache[filePath] = code;
       } catch(err) {
         log("ERROR", `${req.path} - Cannot compile JSX due to the following error:`);
         console.error(err.message);
+        return fallback();
       }
-      return res.end(compileCache[filePath]);
+      return res.end(compiled);
     }
     return originalSendFile.apply(res, arguments);
   };
