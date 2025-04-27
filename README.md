@@ -29,9 +29,9 @@ CatMagick Plus (full features): **v16.0.0+**
 
 CatMagick (no database): **v14.18.0+**
 
-CatMagick Small (no hot-reload, no database): **v11.0.0+**
+CatMagick Mini (no database, no hot-reload): **v11.0.0+**
 
-CatMagick Minimal (no SSR, no hot-reload, no database): **v9.11.0+**
+CatMagick Core (no database, no not-reload, no SSR): **v9.11.0+**
 
 Install it in your project using [NPM](https://www.npmjs.com) or [Yarn](https://yarnpkg.com).
 
