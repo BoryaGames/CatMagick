@@ -59,7 +59,7 @@ CatMagick требует `config.json` файл в корне Вашего пр�
     "proxies": 1, // количество прокси перед Вашим вебсайтом (например, CloudFlare), необходимо что-бы правильно определять IP-адреса под прокси
   },
   "SSL": {
-    "enabled": true, // if your website should work on https
+    "enabled": true, // нужно-ли Вашему сайту работать на https
     "proxy": true, // if your website does not have it's own cert and key files, but there's some proxy (example, CloudFlare) adding a SSL in between, then set this option to true, make sure enabled is also true for this to work
     "cert": "cert.pem", // if your website has SSL enabled and does not use a proxy, you need to specify the certificate file, defaults to cert.pem
     "key": "key.pem" // if your website has SSL enabled and does not use a proxy, you need to specify the certificate key file, defaults to key.pem
@@ -75,7 +75,7 @@ CatMagick требует `config.json` файл в корне Вашего пр�
   },
   "features": {
     "sourceMaps": true, // нужно-ли CatMagick добавлять исходные карты после превращения .jsx файлов в .js, по умолчанию true
-    "SSR": true // should enable server-side rendering support, defaults to false
+    "SSR": true // нужно-ли включить поддержку рендера с сервера, по умолчанию false
   },
   "hotReload": {
     "routes": true, // автоматически замечать изменения в Ваших путях и делать частичное обновление, по умолчанию true
