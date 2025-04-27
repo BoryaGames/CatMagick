@@ -1,4 +1,4 @@
-name: Publish Release to NPM
+name: Publish to NPM and JSR
 
 on:
   release:
@@ -19,3 +19,4 @@ jobs:
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+      - run: npx jsr publish
