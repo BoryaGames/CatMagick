@@ -351,10 +351,10 @@ server.use((req, res, next) => {
         }
       }
       var code = fs.readFileSync(filePath).toString("utf-8");
-      var parts = code.split(/{_% (.+?) %_}/g);
+      var parts = code.split(/{_% ([^]+?) %_}/g);
       var compile = "";
       parts.forEach((part, index) => {
-        compile += ((index + 1) % 2 < 1 ? `${part}\n` : `__output += ${JSON.stringify(part)}.replace(/{_%= (.+?) %_}/g, (_, g) => __escape(__transform(eval(__pretransform(g))))).replace(/{_%- (.+?) %_}/g, (_, g) => __transform(eval(__pretransform(g))));\n`);
+        compile += ((index + 1) % 2 < 1 ? `${part}\n` : `__output += ${JSON.stringify(part)}.replace(/{_%= ([^]+?) %_}/g, (_, g) => __escape(__transform(eval(__pretransform(g))))).replace(/{_%- ([^]+?) %_}/g, (_, g) => __transform(eval(__pretransform(g))));\n`);
       });
       var context = vm.createContext({
         req, console, __transform,
