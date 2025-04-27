@@ -53,19 +53,39 @@ CatMagick requires a `config.json` file in root of your project to start. While 
 
 ```javascript
 {
-  "port": 80, // webserver listen port, defaults to auto-detect
-  "domain": "example.com", // your website's domain, no default
-  "proxies": 1, // number of proxies before your website (example, CloudFlare), required to correctly detect IP-addresses under proxies
-  "sslProxy": true, // if your website is working on http, but there's some proxy (example, CloudFlare) adding a SSL in between, then set this option to true
-  "logRequests": true, // log all requests to console or not, defaults to true
-  "logWebSocket": true, // log all WebSocket connections or disconnections to console, defaults to true
-  "hotReload": true, // automatically detect changes in your routes or databases and perform a partial reload, defaults to true
-  "sourceMaps": true, // should CatMagick add source maps after transforming .jsx files to .js, defaults to true
-  "database": true, // do you need a database in your project, defaults to false
-  "databaseType": "sqlite", // what database do you want, sqlite is the most easy one for beginners to setup, defaults to sqlite, you must install your database's package for it to work
-  "databaseFile": "database.db", // if you use sqlite, what file should it save to, defaults to database.db
-  "sessionSecret": "p2ssw0rd!", // if your project requires sessions to authorize the user, make a secure password for encrypting them, no default
-  "secureCookie": false // if your cookies should be HTTPS, defaults to true, you must disable it if you're using HTTP, or your sessions may not work
+  "web": {
+    "port": 80, // webserver listen port, defaults to auto-detect
+    "domain": "example.com", // your website's domain, no default
+    "proxies": 1, // number of proxies before your website (example, CloudFlare), required to correctly detect IP-addresses under proxies
+  },
+  "SSL": {
+    "enabled": true, // if your website should work on https
+    "proxy": true, // if your website does not have it's own cert and key files, but there's some proxy (example, CloudFlare) adding a SSL in between, then set this option to true, make sure enabled is also true for this to work
+    "cert": "cert.pem", // if your website has SSL enabled and does not use a proxy, you need to specify the certificate file, defaults to cert.pem
+    "key": "key.pem" // if your website has SSL enabled and does not use a proxy, you need to specify the certificate key file, defaults to key.pem
+  },
+  "logs": {
+    "requests": true, // log all requests to console or not, defaults to true
+    "WebSocket": true, // log all WebSocket connections or disconnections to console, defaults to true
+  },
+  "database": {
+    "enablaed": true, // do you need a database in your project, defaults to false
+    "type": "sqlite", // what database do you want, sqlite is the most easy one for beginners to setup, defaults to sqlite, you must install your database's package for it to work
+    "file": "database.db", // if you use sqlite, what file should it save to, defaults to database.db
+  },
+  "features": {
+    "sourceMaps": true, // should CatMagick add source maps after transforming .jsx files to .js, defaults to true
+    "SSR": true // should enable server-side rendering support, defaults to false
+  },
+  "hotReload": {
+    "routes": true, // automatically detect changes in your routes and perform a partial reload, defaults to true
+    "middleware": true, // automatically detect changes in your middleware and perform a partial reload, defaults to true
+    "database": true, // automatically detect changes in your databases and perform a partial reload, defaults to true
+  },
+  "sessions": {
+    "secret": "p2ssw0rd!", // if your project requires sessions to authorize the user, make a secure password for encrypting them, no default
+    "secureCookie": false // if your cookies should be HTTPS, defaults to true, you must disable it if you're using HTTP, or your sessions may not work
+  }
 }
 ```
 
