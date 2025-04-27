@@ -69,7 +69,7 @@ CatMagick requires a `config.json` file in root of your project to start. While 
     "WebSocket": true, // log all WebSocket connections or disconnections to console, defaults to true
   },
   "database": {
-    "enablaed": true, // do you need a database in your project, defaults to false
+    "enabled": true, // do you need a database in your project, defaults to false
     "type": "sqlite", // what database do you want, sqlite is the most easy one for beginners to setup, defaults to sqlite, you must install your database's package for it to work
     "file": "database.db", // if you use sqlite, what file should it save to, defaults to database.db
   },
@@ -84,7 +84,7 @@ CatMagick requires a `config.json` file in root of your project to start. While 
   },
   "sessions": {
     "secret": "p2ssw0rd!", // if your project requires sessions to authorize the user, make a secure password for encrypting them, no default
-    "secureCookie": false // if your cookies should be HTTPS, defaults to true, you must disable it if you're using HTTP, or your sessions may not work
+    "secureCookie": false // if your cookies should be https, defaults to true, you must disable it if you're using HTTP, or your sessions may not work
   }
 }
 ```
