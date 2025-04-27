@@ -60,11 +60,26 @@ Object.keys(config).forEach(category => {
   config[category] = Object.assign(defaultConfig[category], config[category]);
 });
 
+var major = process.version.slice(1).split(".")[0];
+var minor = process.version.slice(1).split(".")[1];
 if (config.hotReload.routes || config.hotReload.middleware || config.hotReload.database || config.hotReload.events) {
-  chokidar = require("chokidar");
+  if (major > 14 || (major == 14 && minor >= 18)) {
+    chokidar = require("chokidar");
+  } else {
+    log("FATAL", "You need at least NodeJS v14.18.0 to use hot-reload");
+    process.exit(1);
+  }
 }
 if (config.database.enabled) {
+  if (major < 16) {
+    log("FATAL", "You need at least NodeJS v16.0.0 to use database");
+    process.exit(1);
+  }
   typeorm = require("typeorm");
+}
+if (config.features.SSR && major < 11) {
+  log("FATAL", "You need at least NodeJS v11.0.0 to use SSR");
+  process.exit(1);
 }
 
 var CatMagick = {};
