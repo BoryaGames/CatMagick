@@ -13,7 +13,7 @@ CatMagick is a framework designed to make websites easily (both frontend and bac
 
 - [React](https://react.dev)-like UI components allows you to easily make and modify your UI structure using JSX
 - Transition between pages without reloading simillar to [ReactRouter](https://reactrouter.com)
-- Add simple classes instead of making CSS styles, just like in [Tailwind](https://tailwindcss.com)
+- Add simple classes instead of making CSS styles, just like in [Tailwind](https://tailwindcss.com) or [Atomizer](https://acss-io.github.io/atomizer)
 - Make API by just adding files in your `routes` / `middleware` folders
 - Easily use database without knowing any SQL commands
 - No need to restart your server, it has *hot-reload* feature built-in
@@ -39,23 +39,36 @@ Install it in your project from [NPM Registry](https://www.npmjs.com/package/cat
 # Install latest stable version from NPM Registry using NPM
 npm install catmagick
 
-# Install latest beta version from NPM Registry using NPM
-npm install git+https://github.com/BoryaGames/CatMagick.git
-```
-
-```sh
 # Install latest stable version from NPM Registry using Yarn
 yarn add catmagick
 
-# Install latest beta version from NPM Registry using Yarn
-yarn add git+https://github.com/BoryaGames/CatMagick.git
-```
-
-```sh
 # Install latest stable version from NPM Registry using PNPM
 pnpm add catmagick
+```
 
-# Install latest beta version from NPM Registry using PNPM
+Or install it in your project from [JSR Registry](https://jsr.io/@topcatto/catmagick) using a package manager: [Yarn](https://yarnpkg.com), [PNPM](https://pnpm.io) or [JSR](https://jsr.io).
+
+```sh
+# Install latest stable version from JSR Registry using Yarn
+yarn add jsr:@topcatto/catmagick
+
+# Install latest stable version from JSR Registry using PNPM
+pnpm add jsr:@topcatto/catmagick
+
+# Install latest stable version from JSR Registry using JSR
+npx jsr add jsr:@topcatto/catmagick
+```
+
+Or install the latest beta in your project from [GitHub](https://github.com/BoryaGames/CatMagick) using a package manager: [NPM](https://www.npmjs.com), [Yarn](https://yarnpkg.com) or [PNPM](https://pnpm.io).
+
+```sh
+# Install latest beta version from GitHub using NPM
+npm install git+https://github.com/BoryaGames/CatMagick.git
+
+# Install latest beta version from GitHub using Yarn
+yarn add git+https://github.com/BoryaGames/CatMagick.git
+
+# Install latest beta version from GitHub using PNPM
 pnpm add https://github.com/BoryaGames/CatMagick.git
 ```
 
