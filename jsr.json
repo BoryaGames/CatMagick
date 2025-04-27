@@ -1,0 +1,6 @@
+{
+  "name": "@topcatto/catmagick",
+  "version": "0.2.1",
+  "license": "MIT",
+  "exports": "./catmagick_server.js"
+}
