@@ -23,17 +23,32 @@ CatMagick is a framework designed to make websites easily (both frontend and bac
 
 ## Installation
 
-CatMagick requires [Node.js](https://nodejs.org) to run.
-It works on **v22.2.0**, but will work on some other versions too.
+CatMagick requires [Node.js](https://nodejs.org) to run. Minimal version of NodeJS depends on your use case - CatMagick can work on very old versions as long as you disable some features.
 
-Install it in your project using [NPM registry](https://www.npmjs.com/package/catmagick).
+CatMagick Plus (full features): **v16.0.0+**
+
+CatMagick (no database): **v14.18.0+**
+
+CatMagick Small (no hot-reload, no database): **v11.0.0+**
+
+CatMagick Minimal (no SSR, no hot-reload, no database): **v9.11.0+**
+
+Install it in your project using [NPM](https://www.npmjs.com) or [Yarn](https://yarnpkg.com).
 
 ```sh
-# Install latest stable version
+# Install latest stable version using NPM
 npm install catmagick
 
-# Install latest development version from source code
+# Install latest development version using NPM
 npm install git+https://github.com/BoryaGames/CatMagick.git
+```
+
+```sh
+# Install latest stable version using Yarn
+yarn add catmagick
+
+# Install latest development version using Yarn
+yarn add git+https://github.com/BoryaGames/CatMagick.git
 ```
 
 To run your project, you just need to `require()` it.
