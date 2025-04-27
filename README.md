@@ -39,7 +39,7 @@ Install it in your project using [NPM](https://www.npmjs.com) or [Yarn](https://
 # Install latest stable version using NPM
 npm install catmagick
 
-# Install latest development version using NPM
+# Install latest beta version using NPM
 npm install git+https://github.com/BoryaGames/CatMagick.git
 ```
 
@@ -47,7 +47,7 @@ npm install git+https://github.com/BoryaGames/CatMagick.git
 # Install latest stable version using Yarn
 yarn add catmagick
 
-# Install latest development version using Yarn
+# Install latest beta version using Yarn
 yarn add git+https://github.com/BoryaGames/CatMagick.git
 ```
 
