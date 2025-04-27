@@ -46,7 +46,8 @@ var defaultConfig = {
   "hotReload": {
     "routes": !0,
     "middleware": !0,
-    "database": !0
+    "database": !0,
+    "events": !0
   },
   "sessions": {
     "secret": null,
@@ -276,6 +277,11 @@ if (!fs.existsSync(path.join(__dirname, "..", "..", "middleware"))) {
   process.exit(1);
 }
 
+if (!fs.existsSync(path.join(__dirname, "..", "..", "events"))) {
+  log("FATAL", `There was no "events" folder found`);
+  process.exit(1);
+}
+
 function log(type, text) {
   var color = "white";
   if (type == "SUCCESS") {
@@ -452,7 +458,35 @@ server.use((req, res, next) => {
   }
   ws.on("message", message => {
     if (message == "PING") {
-      ws.send("PONG");
+      return ws.send("PONG");
+    }
+    try {
+      var msg = JSON.parse(pako.inflate(message, {
+        "to": "string"
+      }));
+    } catch {
+      if (config.logs.WebSocket) {
+        log("WARN", `${req.ip} - Received invalid WebSocket packet.`);
+      }
+      return;
+    }
+    if (["/", "\\", "\x07", "\n", "\b", "\t", "\v", "\f", "\r", "\x7F"].find(char => msg[0].includes(char))) {
+      if (config.logs.WebSocket) {
+        log("WARN", `${req.ip} - Blocked possibly dangerous WebSocket packet.`);
+      }
+      return;
+    }
+    if (!fs.existsSync(path.join(__dirname, "..", "..", "events", `${msg[0]}.js`))) {
+      if (config.logs.WebSocket) {
+        log("WARN", `${req.ip} - Received unknown WebSocket event "${msg[0]}".`);
+      }
+      return;
+    }
+    try {
+      require(path.join(__dirname, "..", "..", "events", `${msg[0]}.js`))(msg[1], ws);
+    } catch(err) {
+      log("ERROR", `${req.ip} - Cannot execute event "${msg[0]}" due to the following error:`);
+      console.error(err);
     }
   });
   ws.on("close", () => {
@@ -463,8 +497,18 @@ server.use((req, res, next) => {
   });
 }).use(async (req, res, next) => {
   for (var middleware of fs.readdirSync(path.join(__dirname, "..", "..", "middleware"))) {
-    if (!await require(path.join(__dirname, "..", "..", "middleware", middleware))(req, res, next)) {
-      return;
+    try {
+      if (!await require(path.join(__dirname, "..", "..", "middleware", middleware))(req, res, next)) {
+        return;
+      }
+    } catch(err) {
+      log("ERROR", `${req.path} - Cannot execute middleware "${middleware}" due to the following error:`);
+      console.error(err);
+      res.status(500);
+      if (fs.existsSync("500.html")) {
+        return res.sendFile(path.join(__dirname, "..", "..", "500.html"));
+      }
+      return res.end("500 Internal Server Error");
     }
   }
 
@@ -525,7 +569,7 @@ server.use((req, res, next) => {
     log("WARN", `${req.path} - Found empty directory`);
   }
   next();
-}).use((req, res) => {
+}).use((_, res) => {
   res.status(404);
   if (fs.existsSync("404.html")) {
     res.sendFile(path.join(__dirname, "..", "..", "404.html"));
@@ -555,14 +599,19 @@ if (config.hotReload.routes) {
 if (config.hotReload.middleware) {
   watchPaths.push(path.join(__dirname, "..", "..", "middleware"));
 }
+if (config.hotReload.events) {
+  watchPaths.push(path.join(__dirname, "..", "..", "events"));
+}
 if (watchPaths.length) {
   chokidar.watch(watchPaths, {
     "cwd": path.join(__dirname, "..", ".."),
-    "ignored": (path2, stats) => stats && stats.isFile() && path.basename(path.join(path2, "..")) != "middleware" && path.basename(path2) != "_route.js"
+    "ignored": (path2, stats) => stats && stats.isFile() && path.basename(path.join(path2, "..")) != "middleware" && path.basename(path.join(path2, "..")) != "events" && path.basename(path2) != "_route.js"
   }).on("change", file => {
     file = file.split("\\").join("/");
     if (path.basename(path.join(file, "..")) == "middleware") {
       log("INFO", `/${path.basename(file)} - Doing middleware hot reload`);
+    } else if (path.basename(path.join(file, "..")) == "events") {
+      log("INFO", `/${path.basename(file)} - Doing event hot reload`);
     } else {
       log("INFO", `/${file.replace("routes/", "").slice(0, -10)} - Doing route hot reload`);
     }

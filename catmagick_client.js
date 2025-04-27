@@ -309,6 +309,26 @@
     };
   }
 
+  function useElement() {
+    function getElement() {
+      return getElement[elementContainsSymbol];
+    }
+    getElement.displayData = () => {
+      return getElement().getBoundingClientRect();
+    };
+    getElement[elementContainsSymbol] = null;
+    return getElement;
+  }
+
+  function useEvent(event, callback) {
+    var localIndex = currentEventIndex++;
+    var path = currentPath.join(";");
+    if (!events.has(path)) {
+      events.set(path, new Map);
+    }
+    events.get(path).set(localIndex, [event, callback]);
+  }
+
   CatMagick.route = (path, root) => {
     debugLog(`Registered route "${path}".`);
     routes[path] = root;
@@ -410,26 +430,6 @@
     return fetch(url, options);
   };
 
-  function useElement() {
-    function getElement() {
-      return getElement[elementContainsSymbol];
-    }
-    getElement.displayData = () => {
-      return getElement().getBoundingClientRect();
-    };
-    getElement[elementContainsSymbol] = null;
-    return getElement;
-  }
-
-  function useEvent(event, callback) {
-    var localIndex = currentEventIndex++;
-    var path = currentPath.join(";");
-    if (!events.has(path)) {
-      events.set(path, new Map);
-    }
-    events.get(path).set(localIndex, [event, callback]);
-  }
-
   new class Activity extends CatMagick.Component {
     render() {
       return [{
@@ -438,6 +438,10 @@
         "children": currentComponent.children
       }];
     }
+  }
+
+  function dispatchEvent(event, data) {
+    ws.send(pako.deflate(JSON.stringify([event, data])));
   }
 
   window.CatMagick = CatMagick;
@@ -450,6 +454,7 @@
   window.useLocation = useLocation;
   window.useElement = useElement;
   window.useEvent = useEvent;
+  window.dispatchEvent = dispatchEvent;
 
   window.addEventListener("popstate", () => {
     for (var elementEffects of effects.values()) {
