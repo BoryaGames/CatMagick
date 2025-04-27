@@ -81,6 +81,7 @@ CatMagick requires a `config.json` file in root of your project to start. While 
     "routes": true, // automatically detect changes in your routes and perform a partial reload, defaults to true
     "middleware": true, // automatically detect changes in your middleware and perform a partial reload, defaults to true
     "database": true, // automatically detect changes in your databases and perform a partial reload, defaults to true
+    "events": // automatically detect changes in your events and perform a partial reload, defaults to true
   },
   "sessions": {
     "secret": "p2ssw0rd!", // if your project requires sessions to authorize the user, make a secure password for encrypting them, no default
