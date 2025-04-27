@@ -30,7 +30,8 @@
   "author": "topcatto",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/BoryaGames/CatMagick/issues"
+    "url": "https://github.com/BoryaGames/CatMagick/issues",
+    "email": "feedbackborya@yandex.ru"
   },
   "homepage": "https://github.com/BoryaGames/CatMagick#readme",
   "dependencies": {
@@ -45,5 +46,8 @@
   "devDependencies": {
     "eslint": "^9.24.0",
     "globals": "^16.0.0"
+  },
+  "engines": {
+    "node": ">=9.11.0"
   }
 }
