@@ -28,3 +28,5 @@ jobs:
           jq --arg name "@BoryaGames/$PACKAGE_NAME" '.name = $name' package.json > package.tmp.json
           mv package.tmp.json package.json
       - run: npm publish --registry=https://npm.pkg.github.com/
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
