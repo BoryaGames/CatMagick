@@ -137,7 +137,7 @@ new class Root extends CatMagick.Component {
 
 You can now see this `<h1>` on your website - it means CatMagick works! :tada:
 
-> ⚠️ If you have hot-reload enabled in config and make a syntax error inside a JSX file, the error will be printed in the server console and the client will receive old version before an error and your users will not be affected.
+> ⚠️ If you make a syntax error inside a JSX file, the error will be printed in the server console and the client will receive old version before an error and your users will not be affected.
 > While that may seem as a useful feature, you may be confused why your code did not update if you're not using IDE and not looking at the server's console.
 
 ### Making multiple components
