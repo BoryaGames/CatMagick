@@ -9,7 +9,13 @@ if (!fs.existsSync(path.join(__dirname, "..", "..", "config.json"))) {
   log("FATAL", `There was no "config.json" file found`);
   process.exit(1);
 }
-var config = require("../../config.json");
+try {
+  var config = require("../../config.json");
+} catch(err) {
+  log("FATAL", "Could not parse config due to the following error:");
+  console.error(err);
+  process.exit(1);
+}
 var cattojs = require("catto.js");
 var babel = require("@babel/core");
 var pako = require("pako");
