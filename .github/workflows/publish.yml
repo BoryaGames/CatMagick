@@ -1,4 +1,4 @@
-name: Publish to NPM
+name: Publish
 
 on:
   release:
@@ -19,3 +19,15 @@ jobs:
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://npm.pkg.github.com/
+      - run: |
+          echo "registry=https://npm.pkg.github.com/" > ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
+      - run: |
+          PACKAGE_NAME=$(jq -r '.name' package.json)
+          jq --arg name "@BoryaGames/$PACKAGE_NAME" '.name = $name' package.json > package.tmp.json
+          mv package.tmp.json package.json
+      - run: npm publish
