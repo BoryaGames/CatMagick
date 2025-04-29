@@ -19,7 +19,7 @@ CatMagick is a framework designed to make websites easily (both frontend and bac
 - No need to restart your server, it has *hot-reload* feature built-in
 - Auto rollback to working version in case of syntax error
 - CatMagick also maintains WebSocket connection between your frontend and backend at all times, so you can easily synchronize them
-- Ability to on very old [Node.js](https://nodejs.org) versions
+- Ability to run on very old [Node.js](https://nodejs.org) versions
 - ✨ Magic ✨
 
 ## Installation
