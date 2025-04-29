@@ -551,7 +551,7 @@ We have only made client routes, but how do we make an API routes? You just need
 
 Let's create a `routes/users/$id/_route.js` file:
 
-```js
+```javascript
 // We got a GET request on this route
 exports.get = (req, res) => {
   // Read saved $id from URL
@@ -575,7 +575,7 @@ exports.post = (req, res) => {
 
 Next, let's make a *middleware* - it's a code that runs on every single request and on every single method, and can interrupt the request before the route even gets called. Create a file in `middlewares` folder with any name you like.
 
-```js
+```javascript
 // The middleware function
 module.exports = (req, res) => {
   // If the ip address matches, respond with the error and stop route from executing
@@ -603,7 +603,7 @@ If you want to make your own friendly design for errors, you can add `404.html`,
 
 Let's make a real-time chat app.
 
-```jax
+```jsx
 new class Root extends CatMagick.Component {
   render() {
     // We'll save messages in a state
@@ -680,7 +680,164 @@ useEvent("MESSAGE_CREATE", content => {
 });
 ```
 
-> `dispatchEvent` will send this event to all people - normally you only need to send it to the authorized user and not everyone else.
-> For that, there's a third argument - a function that is a condition whetever should client receive this event or not.
+While this works fine, you can improve it by using WebSocket to send messages too:
 
-### *DOCUMENTATION IS IN W.I.P*
+```jsx
+// Send from client
+dispatchEvent("SEND_MESSAGE", content);
+```
+
+To receive events on the server, make `/events/SEND_MESSAGE.js` file:
+
+```javascript
+module.exports = (content, client) => {
+  // Add message to the list
+  messages.push(content);
+
+  // Update messages for all users
+  CatMagick.dispatchEvent("NEW_MESSAGE", content);
+
+  // Btw, you can use the client variable to store info about the client
+  // This client is authorized as user 123
+  client.user = 123;
+  // We can send events based on condition: send only to all clients authorized as user 123
+  CatMagick.dispatchEvent("TEST", messages, client => client.user == 123);
+};
+```
+
+### Database
+
+Let's improve previous chat app by using a database instead of in-memory array. Start from setting up your config to enable database.
+
+Now, you need to create a database schemas - create `/databases/Message.js` file:
+
+```javascript
+module.exports = CatMagick.createDatabase({
+  "id": CatMagick.wholeNumber,
+  "content": CatMagick.unlimitedText
+});
+```
+
+You need to specify all data you want to store - we just want to store message's content. But everything in a database must have an unique data - so make sure that first property will be an unique identifier - it can have any name and type, but must be the first one.
+
+Now, let's talk about types:
+
+`CatMagick.wholeNumber` - a number, that's not a floating point (example: `34`)
+
+`CatMagick.floatingNumber` - a number, that can be a floating point (example: `34.7`)
+
+`CatMagick.unlimitedText` - any string (example: `"CatMagick"`)
+
+`CatMagick.limitedText(300)` - a string with the limit of it's length so it can be stored more efficiently (example: `"CatMagick"`)
+
+`CatMagick.boolean` - a boolean value (examples: `false`, `true`)
+
+Time to use our new database in action, let's modify get all messages route:
+
+```javascript
+exports.get = async (req, res) => {
+  // Use a database
+  var Message = CatMagick.useDatabase("Message");
+
+  // Get all messages
+  var messages = await Message.get({});
+
+  // Respond with the list of messages
+  res.json(messages);
+};
+```
+
+> `.get` method accepts conditions as an argument, if you want to get all messages with a specific content you can do `await Message.get({ "content": "Test" })`.
+
+Now, let's modify new message event:
+
+```javascript
+module.exports = (content, client) => {
+  // Use a database
+  var Message = CatMagick.useDatabase("Message");
+
+  // Add new message
+  await Message.add({ content });
+
+  // Update messages for all users
+  CatMagick.dispatchEvent("NEW_MESSAGE", content);
+};
+```
+
+> Since ID is a whole number, it can be auto-generated so you don't have to specify it when adding new data to the database.
+> If your unique property is not a whole number, make sure to give an unique ID when adding new data.
+
+And a few useful methods:
+
+```javascript
+// Delete from database
+await Message.delete({
+  "id": 34
+});
+
+// Delete everything
+await Message.delete();
+
+// Get all messages
+var messages = await Message.get({});
+
+// Get one message (getOne returns one object instead of an array)
+var msg = await Message.getOne({
+  "id": 7
+});
+
+// Edit third message
+await messages[2].edit({
+  "content": "New content!"
+});
+
+// Delete first message
+await messages[0].delete();
+```
+
+### Database relations
+
+Let's say you have a User database:
+
+```javascript
+module.exports = CatMagick.createDatabase({
+  "id": CatMagick.wholeNumber,
+  "username": CatMagick.limitedText(255)
+});
+```
+
+A message can have an author which is a User - you could store it's ID, but you need to manually get the User everytime you need it.
+
+```javascript
+var User = require("./User.js");
+
+module.exports = CatMagick.createDatabase({
+  "id": CatMagick.wholeNumber,
+  "author": User,
+  "content": CatMagick.unlimitedText
+});
+```
+
+But you can do relations like this - just specify another database as a type.
+
+```javascript
+var cat = await User.getOne({
+  "id": 123
+});
+
+await Message.add({
+  "author": cat,
+  "content": "Test"
+});
+```
+
+We just saved the author of the message to the database. Now, next time you get it, it will be a User object already:
+
+```javascript
+var msg = await Message.getOne({
+  "id": 7
+});
+
+console.log(msg.author.id); // 123
+console.log(msg.author.username); // cat
+```
