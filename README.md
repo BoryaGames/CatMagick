@@ -779,7 +779,7 @@ await Message.delete({
 await Message.delete();
 
 // Get all messages
-var messages = await Message.get({});
+var messages = await Message.get();
 
 // Get one message (getOne returns one object instead of an array)
 var msg = await Message.getOne({
