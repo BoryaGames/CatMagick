@@ -72,9 +72,11 @@
       var element = elements[elementIndex];
       visitedPaths.push(currentPath.join(";"));
       if (elementTypes.has(currentPath.join(";")) && elementTypes.get(currentPath.join(";")) != element.type) {
-        for (var effect of effects.get(currentPath.join(";")).values()) {
-          if (typeof effect[2] === "function") {
-            effect[2]();
+        if (effects.has(currentPath.join(";"))) {
+          for (var effect of effects.get(currentPath.join(";")).values()) {
+            if (typeof effect[2] === "function") {
+              effect[2]();
+            }
           }
         }
         states.delete(currentPath.join(";"));
@@ -141,9 +143,11 @@
 
     if (isRoot) {
       Array.from(states.keys()).filter(path => path).filter(path => !visitedPaths.includes(path)).forEach(path => {
-        for (var effect of effects.get(path).values()) {
-          if (typeof effect[2] === "function") {
-            effect[2]();
+        if (effects.has(path)) {
+          for (var effect of effects.get(path).values()) {
+            if (typeof effect[2] === "function") {
+              effect[2]();
+            }
           }
         }
         states.delete(path);
