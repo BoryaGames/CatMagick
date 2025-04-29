@@ -142,11 +142,12 @@
         domElement.style.viewTransitionName = `transition-${currentPath.join("-")}`;
         domElement.style.viewTransitionClass = flags.ViewTransition.animation;
       }
-      await render(!1, element.children, domElement, (originalElement.type == "Activity" && !originalElement.props.show), flags);
+      await render(!1, element.children, domElement, (originalElement.type == "Activity" && !originalElement.props.show), JSON.parse(JSON.stringify(flags)));
       if (!fake) {
         parent.appendChild(domElement);
       }
       currentPath.pop();
+      flags = JSON.parse(JSON.stringify(domElement._catmagickFlags));
     }
 
     if (isRoot) {
@@ -558,7 +559,7 @@
   });
 
   if (document.readyState == "loading") {
-    window.addEventListener("DOMContentLoaded", () => render(!0, null, null, !1, []));
+    window.addEventListener("DOMContentLoaded", () => render(!0, null, null, !1, {}));
   } else {
     render(!0, null, null, !1, {});
   }
