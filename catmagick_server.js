@@ -175,6 +175,9 @@ CatMagick.Database = class {
   }
 
   async get(props) {
+    if (!props) {
+      props = {};
+    }
     return await Promise.all((await this._repo.findBy(props)).map(async entity => {
       var entity2 = {};
       Object.defineProperty(entity2, "_props", {
@@ -210,6 +213,9 @@ CatMagick.Database = class {
   }
 
   async add(props) {
+    if (!props) {
+      props = {};
+    }
     if (databaseRelations.has(this.name)) {
       for (var prop of Object.keys(props)) {
         if (databaseRelations.get(this.name).has(prop) && props[prop]) {
@@ -223,11 +229,11 @@ CatMagick.Database = class {
   }
 
   async delete(props) {
-    await this._repo.delete(props);
-  }
-
-  async clear() {
-    await this._repo.clear();
+    if (props && Object.keys(props).length) {
+      await this._repo.delete(props);
+    } else {
+      await this._repo.clear();
+    }
   }
 };
 
