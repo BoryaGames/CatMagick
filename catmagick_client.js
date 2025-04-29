@@ -95,7 +95,7 @@
         element = {
           "type": "div",
           "props": {},
-          "children": (components[element.type].render() || [])
+          "children": (components[element.type].render(currentComponent.props) || [])
         };
         if (element.children.length == 1) {
           if (!components[element.children[0].type]) {
@@ -226,10 +226,6 @@
       components[this.constructor.name] = this;
     }
   };
-
-  function useAttribute(name) {
-    return currentComponent.props[name];
-  }
 
   function useContent() {
     return currentComponent.children;
@@ -445,7 +441,6 @@
   }
 
   window.CatMagick = CatMagick;
-  window.useAttribute = useAttribute;
   window.useContent = useContent;
   window.useState = useState;
   window.useEffect = useEffect;
