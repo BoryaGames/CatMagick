@@ -427,7 +427,7 @@ server.use((req, res, next) => {
         if (element.type === textElementSymbol) {
           return element.props.nodeValue;
         } else {
-          return `<${element.type}${Object.keys(element.props).map(prop => ` ${prop}={${JSON.stringify(element.props[prop])}}`)}>${element.children.map(__transform).join("")}</${element.type}>`;
+          return `<${element.type}${Object.keys(element.props).map(prop => ` ${prop}={${JSON.stringify(element.props[prop])}}`).join("")}>${element.children.map(__transform).join("")}</${element.type}>`;
         }
       }
       var code = fs.readFileSync(filePath).toString("utf-8");
