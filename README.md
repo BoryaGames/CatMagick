@@ -163,11 +163,11 @@ new class Root extends CatMagick.Component {
 
 // Your own component
 new class MyComponent extends CatMagick.Component {
-  render() {
+  // Read attributes from an argument
+  render({ color }) {
     // To add custom CSS styles, the most easy way to use "style" attribute, and it's value is a JavaScript object
-    // useAttribute(name) just returns the attribute value
     return <p style={{
-      "color": useAttribute("color")
+      "color": color
     }}>
       {/* Use {something} syntax to insert JavaScript variables inside HTML tags */}
       {/* useContent() just returns the content inside your component (in this case, "World") */}
