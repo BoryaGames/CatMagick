@@ -83,9 +83,19 @@ if (config.database.enabled) {
   }
   typeorm = require("typeorm");
 }
-if (config.features.SSR && major < 11) {
-  log("FATAL", "You need at least NodeJS v11.0.0 to use SSR");
-  process.exit(1);
+if (!Array.prototype.flat) {
+  function flat() {
+    var t = isNaN(arguments[0]) ? 1 : Number(arguments[0]);
+    return t ? Array.prototype.reduce.call(this, function(a, e) {
+      return Array.isArray(e) ? a.push.apply(a, flat.call(e, t - 1)) : a.push(e), a
+    }, []) : Array.prototype.slice.call(this);
+  }
+  Object.defineProperty(Array.prototype, "flat", {
+    "configurable": !0,
+    "value": flat,
+    "writable": !0
+  });
+  log("INFO", "Native Array.flat not supported, injecting polyfill");
 }
 
 var CatMagick = {};
