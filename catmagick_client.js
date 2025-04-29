@@ -49,7 +49,7 @@
     return new RegExp(`^${path.replace(/(\/|^)\$([A-Za-z0-9]+)(\/|$)/g, "$1(?<$2>[A-Za-z0-9-_\\$]+)$3").replace(/(\/|^)\$(\?)?(\/|$)/g, (_, prefix, optional, suffix) => `${prefix}(?:[A-Za-z0-9-_\\$]${optional ? "*" : "+"})${suffix}`).replace(/(\/|^)\$\$(\?)?(\/|$)/g, (_, prefix, optional, suffix) => `${prefix}(?:[A-Za-z0-9-_\\$/]${optional ? "*" : "+"})${suffix}`)}$`);
   }
 
-  function render(isRoot, elements, parent, fake) {
+  async function render(isRoot, elements, parent, fake, flags) {
     if (isRoot) {
       if (!components[rootElement]) {
         return;
@@ -62,7 +62,7 @@
       currentMemoIndex = 0;
       currentCacheIndex = 0;
       currentEventIndex = 0;
-      elements = components[rootElement].render();
+      elements = components[rootElement].render({});
       parent = virtualDom;
       visitedPaths = [];
     }
@@ -134,7 +134,15 @@
       }
       Object.keys(element.props).forEach(key => domElement[key] = element.props[key]);
       Object.keys((element.props.style || {})).forEach(key => domElement.style[key] = (typeof element.props.style[key] === "number") ? `${element.props.style[key]}px` : element.props.style[key]);
-      render(!1, element.children, domElement, (originalElement.type == "Activity" && !originalElement.props.show));
+      domElement._catmagickFlags = JSON.parse(JSON.stringify(flags));
+      if (originalElement.type == "ViewTransition") {
+        flags[originalElement.type] = originalElement.props;
+      }
+      if (flags.ViewTransition && domElement.style) {
+        domElement.style.viewTransitionName = `transition-${currentPath.join("-")}`;
+        domElement.style.viewTransitionClass = flags.ViewTransition.animation;
+      }
+      await render(!1, element.children, domElement, (originalElement.type == "Activity" && !originalElement.props.show), flags);
       if (!fake) {
         parent.appendChild(domElement);
       }
@@ -157,7 +165,7 @@
         events.delete(path);
       });
       debugLog("Syncing...");
-      syncDom(virtualDom, document.body);
+      await syncDom(virtualDom, document.body);
       debugLog(`Rendered in ${parseFloat((performance.now() - renderStarted).toFixed(1))}ms.`);
       for (var elementEffects of effects.values()) {
         for (var [effectId, effect2] of elementEffects.entries()) {
@@ -170,15 +178,23 @@
     }
   }
 
-  function syncDom(virtual, real) {
+  async function syncDom(virtual, real) {
     var maxNodes = Math.max(virtual.childNodes.length, real.childNodes.length);
     var toRemove = [];
+    var toTransition = [];
     for (var i = 0; i < maxNodes; i++) {
       var virtualNode = virtual.childNodes[i];
       var realNode = real.childNodes[i];
       if (virtualNode && !realNode) {
         virtual.replaceChild(virtualNode.cloneNode(!0), virtualNode);
-        real.appendChild(virtualNode);
+        if (virtualNode._catmagickFlags && virtualNode._catmagickFlags.ViewTransition) {
+          toTransition.push({
+            "type": "append",
+            real, virtualNode
+          });
+        } else {
+          real.appendChild(virtualNode);
+        }
       } else if (!virtualNode && realNode) {
         if (realNode._catmagickProps && typeof realNode._catmagickProps.ref === "function") {
           realNode._catmagickProps.ref[elementContainsSymbol] = null;
@@ -195,31 +211,79 @@
         Object.keys(realNode._catmagickEvents).forEach(ev => realNode.removeEventListener(ev, realNode._catmagickEvents[ev]));
         Object.keys(virtualNode._catmagickEvents).forEach(ev => realNode.addEventListener(ev, virtualNode._catmagickEvents[ev]));
         realNode._catmagickEvents = virtualNode._catmagickEvents;
-        for (var prop of new Set([...Object.keys(virtualNode._catmagickProps), ...Object.keys(realNode._catmagickProps)])) {
-          if (!Object.keys(virtualNode._catmagickProps).includes(prop) && Object.keys(realNode._catmagickProps).includes(prop)) {
-            realNode.removeAttribute((prop == "className") ? "class" : prop);
-          } else if ((Object.keys(virtualNode._catmagickProps).includes(prop) && !Object.keys(realNode._catmagickProps).includes(prop)) || virtualNode._catmagickProps[prop] !== realNode._catmagickProps[prop]) {
-            if (prop == "style") {
-              for (var prop2 of new Set([...Object.keys(virtualNode._catmagickProps.style || {}), ...Object.keys(realNode._catmagickProps.style || {})])) {
-                if (!Object.keys(virtualNode._catmagickProps.style || {}).includes(prop2) && Object.keys(realNode._catmagickProps.style || {}).includes(prop2)) {
-                  realNode.style[prop2] = "";
-                } else if ((Object.keys(virtualNode._catmagickProps.style || {}).includes(prop2) && !Object.keys(realNode._catmagickProps.style || {}).includes(prop2)) || virtualNode._catmagickProps.style[prop2] !== realNode._catmagickProps.style[prop2]) {
-                  realNode.style[prop2] = (typeof virtualNode._catmagickProps.style[prop2] === "number") ? `${virtualNode._catmagickProps.style[prop2]}px` : virtualNode._catmagickProps.style[prop2];
+        if (virtualNode._catmagickFlags && virtualNode._catmagickFlags.ViewTransition) {
+          toTransition.push({
+            "type": "update",
+            virtualNode, realNode
+          });
+        } else {
+          for (var prop of new Set([...Object.keys(virtualNode._catmagickProps), ...Object.keys(realNode._catmagickProps)])) {
+            if (!Object.keys(virtualNode._catmagickProps).includes(prop) && Object.keys(realNode._catmagickProps).includes(prop)) {
+              realNode.removeAttribute((prop == "className") ? "class" : prop);
+            } else if ((Object.keys(virtualNode._catmagickProps).includes(prop) && !Object.keys(realNode._catmagickProps).includes(prop)) || virtualNode._catmagickProps[prop] !== realNode._catmagickProps[prop]) {
+              if (prop == "style") {
+                for (var prop2 of new Set([...Object.keys(virtualNode._catmagickProps.style || {}), ...Object.keys(realNode._catmagickProps.style || {})])) {
+                  if (!Object.keys(virtualNode._catmagickProps.style || {}).includes(prop2) && Object.keys(realNode._catmagickProps.style || {}).includes(prop2)) {
+                    realNode.style[prop2] = "";
+                  } else if ((Object.keys(virtualNode._catmagickProps.style || {}).includes(prop2) && !Object.keys(realNode._catmagickProps.style || {}).includes(prop2)) || virtualNode._catmagickProps.style[prop2] !== realNode._catmagickProps.style[prop2]) {
+                    realNode.style[prop2] = (typeof virtualNode._catmagickProps.style[prop2] === "number") ? `${virtualNode._catmagickProps.style[prop2]}px` : virtualNode._catmagickProps.style[prop2];
+                  }
                 }
+              } else {
+                realNode[prop] = virtualNode._catmagickProps[prop];
               }
-            } else {
-              realNode[prop] = virtualNode._catmagickProps[prop];
             }
           }
+          realNode._catmagickProps = virtualNode._catmagickProps;
         }
-        realNode._catmagickProps = virtualNode._catmagickProps;
         if (typeof realNode._catmagickProps.ref === "function") {
           realNode._catmagickProps.ref[elementContainsSymbol] = realNode;
         }
         syncDom(virtualNode, realNode);
       }
     }
-    toRemove.forEach(node => node.remove());
+    for (var node of toRemove) {
+      if (node._catmagickFlags && node._catmagickFlags.ViewTransition) {
+        toTransition.push({
+          "type": "remove",
+          node
+        });
+      } else {
+        node.remove();
+      }
+    }
+    if (toTransition.length) {
+      await document.startViewTransition(() => {
+        for (var task of toTransition) {
+          if (task.type == "append") {
+            task.real.appendChild(task.virtualNode);
+          }
+          if (task.type == "update") {
+            for (var prop of new Set([...Object.keys(task.virtualNode._catmagickProps), ...Object.keys(task.realNode._catmagickProps)])) {
+              if (!Object.keys(task.virtualNode._catmagickProps).includes(prop) && Object.keys(task.realNode._catmagickProps).includes(prop)) {
+                task.realNode.removeAttribute((prop == "className") ? "class" : prop);
+              } else if ((Object.keys(task.virtualNode._catmagickProps).includes(prop) && !Object.keys(task.realNode._catmagickProps).includes(prop)) || task.virtualNode._catmagickProps[prop] !== task.realNode._catmagickProps[prop]) {
+                if (prop == "style") {
+                  for (var prop2 of new Set([...Object.keys(task.virtualNode._catmagickProps.style || {}), ...Object.keys(task.realNode._catmagickProps.style || {})])) {
+                    if (!Object.keys(task.virtualNode._catmagickProps.style || {}).includes(prop2) && Object.keys(task.realNode._catmagickProps.style || {}).includes(prop2)) {
+                      task.realNode.style[prop2] = "";
+                    } else if ((Object.keys(task.virtualNode._catmagickProps.style || {}).includes(prop2) && !Object.keys(task.realNode._catmagickProps.style || {}).includes(prop2)) || task.virtualNode._catmagickProps.style[prop2] !== task.realNode._catmagickProps.style[prop2]) {
+                      task.realNode.style[prop2] = (typeof task.virtualNode._catmagickProps.style[prop2] === "number") ? `${task.virtualNode._catmagickProps.style[prop2]}px` : task.virtualNode._catmagickProps.style[prop2];
+                    }
+                  }
+                } else {
+                  task.realNode[prop] = task.virtualNode._catmagickProps[prop];
+                }
+              }
+            }
+            task.realNode._catmagickProps = task.virtualNode._catmagickProps;
+          }
+          if (task.type == "remove") {
+            task.node.remove();
+          }
+        }
+      }).ready;
+    }
   }
 
   CatMagick.Component = class {
@@ -246,7 +310,7 @@
     }
     return [states.get(path).get(localIndex), value => {
       states.get(path).set(localIndex, value);
-      render(!0);
+      render(!0, null, null, !1, {});
     }];
   }
 
@@ -368,7 +432,7 @@
         caches = new Map;
         rootElement = routes[route];
         routeParams = match.groups;
-        render(!0);
+        render(!0, null, null, !1, {});
         return;
       }
     }
@@ -414,7 +478,7 @@
   };
 
   CatMagick.rerender = () => {
-    render(!0);
+    render(!0, null, null, !1, {});
   };
 
   CatMagick.fetch = (url, options) => {
@@ -431,6 +495,16 @@
   };
 
   new class Activity extends CatMagick.Component {
+    render() {
+      return [{
+        "type": "div",
+        "props": {},
+        "children": currentComponent.children
+      }];
+    }
+  }
+
+  new class ViewTransition extends CatMagick.Component {
     render() {
       return [{
         "type": "div",
@@ -480,13 +554,13 @@
     if (!routeFound) {
       rootElement = "Root";
     }
-    render(!0);
+    render(!0, null, null, !1, {});
   });
 
   if (document.readyState == "loading") {
-    window.addEventListener("DOMContentLoaded", () => render(!0));
+    window.addEventListener("DOMContentLoaded", () => render(!0, null, null, !1, []));
   } else {
-    render(!0);
+    render(!0, null, null, !1, {});
   }
 
   function connectWS() {
