@@ -61,7 +61,7 @@ var defaultConfig = {
   }
 };
 
-config = Object.assign(defaultConfig, config);
+config = Object.assign({}, defaultConfig, config);
 Object.keys(config).forEach(category => {
   config[category] = Object.assign(defaultConfig[category], config[category]);
 });
