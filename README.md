@@ -722,7 +722,7 @@ You need to specify all data you want to store - we just want to store message's
 
 Now, let's talk about types:
 
-`CatMagick.wholeNumber` - a number, that's not a floating point (example: `34`)
+`CatMagick.wholeNumber` - a whole number, that's not a floating point (example: `34`)
 
 `CatMagick.floatingNumber` - a number, that can be a floating point (example: `34.7`)
 
@@ -730,7 +730,7 @@ Now, let's talk about types:
 
 `CatMagick.limitedText(300)` - a string with the limit of it's length so it can be stored more efficiently (example: `"CatMagick"`)
 
-`CatMagick.boolean` - a boolean value (examples: `false`, `true`)
+`CatMagick.boolean` - a logic value (examples: `false`, `true`)
 
 Time to use our new database in action, let's modify get all messages route:
 
@@ -740,7 +740,7 @@ exports.get = async (req, res) => {
   var Message = CatMagick.useDatabase("Message");
 
   // Get all messages
-  var messages = await Message.get({});
+  var messages = await Message.get();
 
   // Respond with the list of messages
   res.json(messages);
@@ -764,8 +764,8 @@ module.exports = (content, client) => {
 };
 ```
 
-> Since ID is a whole number, it can be auto-generated so you don't have to specify it when adding new data to the database.
-> If your unique property is not a whole number, make sure to give an unique ID when adding new data.
+> Since `id` is a whole number, it can be auto-generated so you don't have to specify it when adding new data to the database.
+> If your unique property is not a whole number, make sure to give an unique identifier when adding new data.
 
 And a few useful methods:
 
