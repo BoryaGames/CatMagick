@@ -16,13 +16,13 @@ try {
   console.error(err);
   process.exit(1);
 }
-var cattojs = require("catto.js");
 var babel = require("@babel/core");
 var pako = require("pako");
 var vm = require("vm");
 var Module = require("module");
 var chokidar = null;
 var typeorm = null;
+var cattojs = null;
 
 var defaultConfig = {
   "web": {
@@ -84,6 +84,7 @@ if (config.database.enabled) {
   typeorm = require("typeorm");
 }
 if (!Array.prototype.flat) {
+  log("INFO", "Native Array.flat not supported, injecting polyfill...");
   function flat() {
     var t = isNaN(arguments[0]) ? 1 : Number(arguments[0]);
     return t ? Array.prototype.reduce.call(this, function(a, e) {
@@ -95,8 +96,8 @@ if (!Array.prototype.flat) {
     "value": flat,
     "writable": !0
   });
-  log("INFO", "Native Array.flat not supported, injecting polyfill");
 }
+cattojs = require("catto.js");
 
 var CatMagick = {};
 var options = {
