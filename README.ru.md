@@ -163,11 +163,11 @@ new class Root extends CatMagick.Component {
 
 // Ваш компонент
 new class MyComponent extends CatMagick.Component {
-  render() {
+  // Читайте аттрибуты из аргумента
+  render({ color }) {
     // Для добавления пользовательских CSS стилей, самый лёгкий способ это использование аттрибута "style", и его значение это JavaScript объект
-    // useAttribute(название) просто возвращает значение аттрибута
     return <p style={{
-      "color": useAttribute("color")
+      "color": color
     }}>
       {/* Используйте синтаксис {что-то} для вставки JavaScript переменных в Ваши HTML теги */}
       {/* useContent() просто возвращает содержимое внутри Вашего компонента (в данном случае, "Мир") */}
