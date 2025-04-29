@@ -19,6 +19,7 @@ CatMagick is a framework designed to make websites easily (both frontend and bac
 - No need to restart your server, it has *hot-reload* feature built-in
 - Auto rollback to working version in case of syntax error
 - CatMagick also maintains WebSocket connection between your frontend and backend at all times, so you can easily synchronize them
+- Ability to on very old [Node.js](https://nodejs.org) versions
 - ✨ Magic ✨
 
 ## Installation
@@ -29,9 +30,7 @@ CatMagick Plus (full features): **v16.0.0+**
 
 CatMagick (no database): **v14.18.0+**
 
-CatMagick Mini (no database, no hot-reload): **v11.0.0+**
-
-CatMagick Core (no database, no not-reload, no SSR): **v9.11.0+**
+CatMagick Mini (no database, no hot-reload): **v9.11.0+**
 
 Install it in your project from [NPM Registry](https://www.npmjs.com/package/catmagick) using a package manager: [NPM](https://www.npmjs.com), [Yarn](https://yarnpkg.com) or [PNPM](https://pnpm.io).
 
