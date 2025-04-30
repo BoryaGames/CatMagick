@@ -724,7 +724,7 @@ if (config.hotReload.config) {
   chokidar.watch(path.join(__dirname, "..", "..", "config.json"), {
     "cwd": path.join(__dirname, "..", "..", "config.json")
   }).on("change", () => {
-    log("INFO", `Config - Doing config hot reload`);
+    log("INFO", "Doing config hot reload");
     delete module.constructor._cache[require.resolve(path.join(__dirname, "..", "..", "config.json"))];
     try {
       config = require("../../config.json");
