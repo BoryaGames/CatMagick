@@ -19,6 +19,7 @@ CatMagick is a framework designed to make websites easily (both frontend and bac
 - No need to restart your server, it has *hot-reload* feature built-in
 - Auto rollback to working version in case of syntax error
 - CatMagick also maintains WebSocket connection between your frontend and backend at all times, so you can easily synchronize them
+- Automatically minify your code to reduce file size and load times
 - Ability to run on very old [Node.js](https://nodejs.org) versions
 - ✨ Magic ✨
 
@@ -97,13 +98,15 @@ CatMagick requires a `config.json` file in root of your project to start. While 
   },
   "features": {
     "sourceMaps": true, // should CatMagick add source maps after transforming .jsx files to .js, defaults to true
-    "SSR": true // should enable server-side rendering support, defaults to false
+    "SSR": true, // should enable server-side rendering support, defaults to false
+    "minify": true // should minify JSX files to reduce file size and load times
   },
   "hotReload": {
     "routes": true, // automatically detect changes in your routes and perform a partial reload, defaults to true
     "middleware": true, // automatically detect changes in your middleware and perform a partial reload, defaults to true
     "database": true, // automatically detect changes in your databases and perform a partial reload, defaults to true
-    "events": // automatically detect changes in your events and perform a partial reload, defaults to true
+    "events": true, // automatically detect changes in your events and perform a partial reload, defaults to true
+    "config": true // automatically detect changes in your config and perform a partial reload, defaults to true, some parts (like webserver listen port) cannot be changed and requires a manual full restart
   },
   "sessions": {
     "secret": "p2ssw0rd!", // if your project requires sessions to authorize the user, make a secure password for encrypting them, no default

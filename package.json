@@ -1,6 +1,6 @@
 {
   "name": "catmagick",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "CatMagick is a framework to make websites easily.",
   "main": "catmagick_server.js",
   "scripts": {
@@ -23,6 +23,10 @@
     "cattoes",
     "easy",
     "api",
+    "tailwind",
+    "atomizer",
+    "react",
+    "nextjs",
     "catmagick",
     "magic",
     "magick"
@@ -37,6 +41,7 @@
   "dependencies": {
     "@babel/core": "^7.26.10",
     "babel-plugin-transform-catmagick-jsx": "^7.25.9",
+    "babel-preset-minify": "^0.5.2",
     "catto.js": "^1.2.3",
     "chalk": "^4.1.2",
     "chokidar": "^4.0.3",

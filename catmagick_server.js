@@ -47,13 +47,15 @@ var defaultConfig = {
   },
   "features": {
     "sourceMaps": !0,
-    "SSR": !1
+    "SSR": !1,
+    "minify": !0
   },
   "hotReload": {
     "routes": !0,
     "middleware": !0,
     "database": !0,
-    "events": !0
+    "events": !0,
+    "config": !0
   },
   "sessions": {
     "secret": null,
@@ -63,12 +65,12 @@ var defaultConfig = {
 
 config = Object.assign({}, defaultConfig, config);
 Object.keys(config).forEach(category => {
-  config[category] = Object.assign(defaultConfig[category], config[category]);
+  config[category] = Object.assign({}, defaultConfig[category], config[category]);
 });
 
 var major = process.version.slice(1).split(".")[0];
 var minor = process.version.slice(1).split(".")[1];
-if (config.hotReload.routes || config.hotReload.middleware || config.hotReload.database || config.hotReload.events) {
+if (config.hotReload.routes || config.hotReload.middleware || config.hotReload.database || config.hotReload.events || config.hotReload.config) {
   if (major > 14 || (major == 14 && minor >= 18)) {
     chokidar = require("chokidar");
   } else {
@@ -415,9 +417,18 @@ server.use((req, res, next) => {
       res.header("Content-Type", "text/jsx; charset=UTF-8");
       function fallback() {
         res.end(babel.transformSync((compileCache[filePath] || ""), {
+          "presets": [["minify", {
+            "mangle": {
+              "keepClassName": !0
+            },
+            "deadcode": {
+              "keepClassName": !0
+            }
+          }]].slice(config.features.minify ? 0 : 1),
           "plugins": ["babel-plugin-transform-catmagick-jsx"],
           "sourceMaps": config.features.sourceMaps ? "inline": !1,
-          "sourceFileName": path.basename(filePath)
+          "sourceFileName": path.basename(filePath),
+          "minified": config.features.minify
         }).code);
       }
       var textElementSymbol = Symbol("CatMagick.TextElement");
@@ -487,9 +498,18 @@ server.use((req, res, next) => {
       }
       try {
         var compiled = babel.transformSync(code, {
+          "presets": [["minify", {
+            "mangle": {
+              "keepClassName": !0
+            },
+            "deadcode": {
+              "keepClassName": !0
+            }
+          }]].slice(config.features.minify ? 0 : 1),
           "plugins": ["babel-plugin-transform-catmagick-jsx"],
           "sourceMaps": config.features.sourceMaps ? "inline": !1,
-          "sourceFileName": path.basename(filePath)
+          "sourceFileName": path.basename(filePath),
+          "minified": config.features.minify
         }).code;
         compileCache[filePath] = code;
       } catch(err) {
@@ -697,6 +717,25 @@ if (config.database.enabled && config.hotReload.database) {
         console.error(error);
       });
     }
+  });
+}
+
+if (config.hotReload.config) {
+  chokidar.watch(path.join(__dirname, "..", "..", "config.json"), {
+    "cwd": path.join(__dirname, "..", "..", "config.json")
+  }).on("change", () => {
+    log("INFO", `Config - Doing config hot reload`);
+    delete module.constructor._cache[require.resolve(path.join(__dirname, "..", "..", "config.json"))];
+    try {
+      config = require("../../config.json");
+    } catch(err) {
+      log("ERROR", "Could not parse config due to the following error:");
+      return console.error(err);
+    }
+    config = Object.assign({}, defaultConfig, config);
+    Object.keys(config).forEach(category => {
+      config[category] = Object.assign({}, defaultConfig[category], config[category]);
+    });
   });
 }
 
