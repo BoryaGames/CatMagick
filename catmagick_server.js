@@ -343,7 +343,7 @@ function log(type, text) {
   if (type == "FATAL") {
     color = "red";
   }
-  console.log(`${chalk[color](`[${(new Date).toLocaleString("ru-RU").split(", ").join(" / ")}] ${type}`)} - ${chalk[color](text)}`);
+  console.log(`${chalk[color](`[${(new Date).toLocaleString().split(", ").join(" / ")}] ${type}`)} - ${chalk[color](text)}`);
 }
 
 function patchHTML(code) {
