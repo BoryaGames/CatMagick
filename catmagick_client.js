@@ -128,20 +128,28 @@
         domElement._catmagickEvents.input = element.props.change;
         domElement.addEventListener("input", element.props.change);
       }
-      domElement._catmagickProps = element.props;
+      domElement._catmagickProps = Object.assign({}, element.props);
       if (typeof element.props.ref === "function") {
         element.props.ref[elementContainsSymbol] = domElement;
       }
       Object.keys(element.props).forEach(key => domElement[key] = element.props[key]);
       Object.keys((element.props.style || {})).forEach(key => domElement.style[key] = (typeof element.props.style[key] === "number") ? `${element.props.style[key]}px` : element.props.style[key]);
-      domElement._catmagickFlags = JSON.parse(JSON.stringify(flags));
       if (originalElement.type == "ViewTransition") {
-        flags[originalElement.type] = originalElement.props;
+        flags[originalElement.type] = {
+          ...originalElement.props,
+          "_pathIndex": currentPath.length
+        };
       }
       if (flags.ViewTransition && domElement.style) {
-        domElement.style.viewTransitionName = `transition-${currentPath.join("-")}`;
+        domElement._catmagickProps.style = Object.assign({}, (domElement._catmagickProps.style || {}), {
+          "viewTransitionName": (flags.ViewTransition.name ? `${flags.ViewTransition.name}-${currentPath.slice(flags.ViewTransition._pathIndex).join("-")}` : `transition-${currentPath.join("-")}`),
+          "viewTransitionClass": flags.ViewTransition.animation
+        });
+        domElement.style.viewTransitionName = (flags.ViewTransition.name ? `${flags.ViewTransition.name}-${currentPath.slice(flags.ViewTransition._pathIndex).join("-")}` : `transition-${currentPath.join("-")}`);
         domElement.style.viewTransitionClass = flags.ViewTransition.animation;
       }
+      domElement._catmagickFlags = JSON.parse(JSON.stringify(flags));
+      domElement._catmagickKey = element.props.key;
       await render(!1, element.children, domElement, (originalElement.type == "Activity" && !originalElement.props.show), JSON.parse(JSON.stringify(flags)));
       if (!fake) {
         parent.appendChild(domElement);
@@ -181,109 +189,152 @@
 
   async function syncDom(virtual, real) {
     var maxNodes = Math.max(virtual.childNodes.length, real.childNodes.length);
-    var toRemove = [];
-    var toTransition = [];
+    var tasks = [];
+    var transitionTasks = [];
+    var virtualChildNodes = Array.from(virtual.childNodes);
+    var realChildNodes = Array.from(real.childNodes);
+    var virtualKeys = virtualChildNodes.map(node => node._catmagickKey).filter(key => key);
+    var realKeys = realChildNodes.map(node => node._catmagickKey).filter(key => key);
     for (var i = 0; i < maxNodes; i++) {
-      var virtualNode = virtual.childNodes[i];
-      var realNode = real.childNodes[i];
-      if (virtualNode && !realNode) {
+      var virtualNode = virtualChildNodes[i];
+      var realNode = realChildNodes[i];
+      if (realNode && realNode._catmagickKey && !virtualKeys.includes(realNode._catmagickKey)) {
+        tasks.push({
+          "type": "remove",
+          "node": realNode
+        });
+        if (i === 0) {
+          virtualChildNodes.unshift(null);
+        } else {
+          virtualChildNodes.splice((i - 1), 0, null);
+        }
+      } else if (virtualNode && virtualNode._catmagickKey && !realNode) {
         virtual.replaceChild(virtualNode.cloneNode(!0), virtualNode);
-        if (virtualNode._catmagickFlags && virtualNode._catmagickFlags.ViewTransition) {
-          toTransition.push({
-            "type": "append",
-            real, virtualNode
+        tasks.push({
+          "type": "insert",
+          "parent": real,
+          "node": virtualNode,
+          "position": realChildNodes[i + 1]
+        });
+      } else if (virtualNode && virtualNode._catmagickKey && realNode && virtualNode._catmagickKey != realNode._catmagickKey) {
+        if (realKeys.includes(virtualNode._catmagickKey)) {
+          var realNode2 = Array.from(real.childNodes).find(node => node._catmagickKey == virtualNode._catmagickKey);
+          tasks.push({
+            "type": "insert",
+            "parent": real,
+            "node": realNode2,
+            "position": realNode
           });
         } else {
-          real.appendChild(virtualNode);
+          virtual.replaceChild(virtualNode.cloneNode(!0), virtualNode);
+          tasks.push({
+            "type": "insert",
+            "parent": real,
+            "node": virtualNode,
+            "position": realNode
+          });
         }
+        if (i === 0) {
+          realChildNodes.unshift(null);
+        } else {
+          realChildNodes.splice((i - 1), 0, null);
+        }
+      } else if (virtualNode && !realNode) {
+        virtual.replaceChild(virtualNode.cloneNode(!0), virtualNode);
+        tasks.push({
+          "type": "insert",
+          "parent": real,
+          "node": virtualNode
+        });
       } else if (!virtualNode && realNode) {
-        if (realNode._catmagickProps && typeof realNode._catmagickProps.ref === "function") {
-          realNode._catmagickProps.ref[elementContainsSymbol] = null;
-        }
-        toRemove.push(realNode);
+        tasks.push({
+          "type": "remove",
+          "node": realNode
+        });
       } else if (virtualNode.nodeName != realNode.nodeName) {
         virtual.replaceChild(virtualNode.cloneNode(!0), virtualNode);
-        real.replaceChild(virtualNode, realNode);
+        tasks.push({
+          "type": "replace",
+          "parent": real,
+          "oldNode": realNode,
+          "newNode": virtualNode
+        });
       } else if (realNode.nodeName == "#text") {
         if (virtualNode.textContent != realNode.textContent) {
           realNode.textContent = virtualNode.textContent;
         }
       } else {
-        Object.keys(realNode._catmagickEvents).forEach(ev => realNode.removeEventListener(ev, realNode._catmagickEvents[ev]));
-        Object.keys(virtualNode._catmagickEvents).forEach(ev => realNode.addEventListener(ev, virtualNode._catmagickEvents[ev]));
-        realNode._catmagickEvents = virtualNode._catmagickEvents;
-        if (virtualNode._catmagickFlags && virtualNode._catmagickFlags.ViewTransition) {
-          toTransition.push({
-            "type": "update",
-            virtualNode, realNode
-          });
-        } else {
-          for (var prop of new Set([...Object.keys(virtualNode._catmagickProps), ...Object.keys(realNode._catmagickProps)])) {
-            if (!Object.keys(virtualNode._catmagickProps).includes(prop) && Object.keys(realNode._catmagickProps).includes(prop)) {
-              realNode.removeAttribute((prop == "className") ? "class" : prop);
-            } else if ((Object.keys(virtualNode._catmagickProps).includes(prop) && !Object.keys(realNode._catmagickProps).includes(prop)) || virtualNode._catmagickProps[prop] !== realNode._catmagickProps[prop]) {
-              if (prop == "style") {
-                for (var prop2 of new Set([...Object.keys(virtualNode._catmagickProps.style || {}), ...Object.keys(realNode._catmagickProps.style || {})])) {
-                  if (!Object.keys(virtualNode._catmagickProps.style || {}).includes(prop2) && Object.keys(realNode._catmagickProps.style || {}).includes(prop2)) {
-                    realNode.style[prop2] = "";
-                  } else if ((Object.keys(virtualNode._catmagickProps.style || {}).includes(prop2) && !Object.keys(realNode._catmagickProps.style || {}).includes(prop2)) || virtualNode._catmagickProps.style[prop2] !== realNode._catmagickProps.style[prop2]) {
-                    realNode.style[prop2] = (typeof virtualNode._catmagickProps.style[prop2] === "number") ? `${virtualNode._catmagickProps.style[prop2]}px` : virtualNode._catmagickProps.style[prop2];
-                  }
-                }
-              } else {
-                realNode[prop] = virtualNode._catmagickProps[prop];
-              }
-            }
-          }
-          realNode._catmagickProps = virtualNode._catmagickProps;
-        }
-        if (typeof realNode._catmagickProps.ref === "function") {
-          realNode._catmagickProps.ref[elementContainsSymbol] = realNode;
-        }
+        tasks.push({
+          "type": "update",
+          virtualNode, realNode
+        });
         syncDom(virtualNode, realNode);
       }
     }
-    for (var node of toRemove) {
-      if (node._catmagickFlags && node._catmagickFlags.ViewTransition) {
-        toTransition.push({
-          "type": "remove",
-          node
-        });
-      } else {
-        node.remove();
+    function doTask(task) {
+      if (task.type == "insert") {
+        if (task.position) {
+          task.parent.insertBefore(task.node, task.position);
+        } else {
+          task.parent.appendChild(task.node);
+        }
       }
-    }
-    if (toTransition.length) {
-      await document.startViewTransition(() => {
-        for (var task of toTransition) {
-          if (task.type == "append") {
-            task.real.appendChild(task.virtualNode);
-          }
-          if (task.type == "update") {
-            for (var prop of new Set([...Object.keys(task.virtualNode._catmagickProps), ...Object.keys(task.realNode._catmagickProps)])) {
-              if (!Object.keys(task.virtualNode._catmagickProps).includes(prop) && Object.keys(task.realNode._catmagickProps).includes(prop)) {
-                task.realNode.removeAttribute((prop == "className") ? "class" : prop);
-              } else if ((Object.keys(task.virtualNode._catmagickProps).includes(prop) && !Object.keys(task.realNode._catmagickProps).includes(prop)) || task.virtualNode._catmagickProps[prop] !== task.realNode._catmagickProps[prop]) {
-                if (prop == "style") {
-                  for (var prop2 of new Set([...Object.keys(task.virtualNode._catmagickProps.style || {}), ...Object.keys(task.realNode._catmagickProps.style || {})])) {
-                    if (!Object.keys(task.virtualNode._catmagickProps.style || {}).includes(prop2) && Object.keys(task.realNode._catmagickProps.style || {}).includes(prop2)) {
-                      task.realNode.style[prop2] = "";
-                    } else if ((Object.keys(task.virtualNode._catmagickProps.style || {}).includes(prop2) && !Object.keys(task.realNode._catmagickProps.style || {}).includes(prop2)) || task.virtualNode._catmagickProps.style[prop2] !== task.realNode._catmagickProps.style[prop2]) {
-                      task.realNode.style[prop2] = (typeof task.virtualNode._catmagickProps.style[prop2] === "number") ? `${task.virtualNode._catmagickProps.style[prop2]}px` : task.virtualNode._catmagickProps.style[prop2];
-                    }
-                  }
-                } else {
-                  task.realNode[prop] = task.virtualNode._catmagickProps[prop];
+      if (task.type == "replace") {
+        task.parent.replaceChild(task.newNode, task.oldNode);
+      }
+      if (task.type == "update") {
+        Object.keys(task.realNode._catmagickEvents).forEach(ev => task.realNode.removeEventListener(ev, task.realNode._catmagickEvents[ev]));
+        Object.keys(task.virtualNode._catmagickEvents).forEach(ev => task.realNode.addEventListener(ev, task.virtualNode._catmagickEvents[ev]));
+        task.realNode._catmagickEvents = task.virtualNode._catmagickEvents;
+        task.realNode._catmagickKey = task.virtualNode._catmagickKey;
+        for (var prop of new Set([...Object.keys(task.virtualNode._catmagickProps), ...Object.keys(task.realNode._catmagickProps)])) {
+          if (!Object.keys(task.virtualNode._catmagickProps).includes(prop) && Object.keys(task.realNode._catmagickProps).includes(prop)) {
+            task.realNode.removeAttribute((prop == "className") ? "class" : prop);
+          } else if ((Object.keys(task.virtualNode._catmagickProps).includes(prop) && !Object.keys(task.realNode._catmagickProps).includes(prop)) || task.virtualNode._catmagickProps[prop] !== task.realNode._catmagickProps[prop]) {
+            if (prop == "style") {
+              for (var prop2 of new Set([...Object.keys(task.virtualNode._catmagickProps.style || {}), ...Object.keys(task.realNode._catmagickProps.style || {})])) {
+                if (!Object.keys(task.virtualNode._catmagickProps.style || {}).includes(prop2) && Object.keys(task.realNode._catmagickProps.style || {}).includes(prop2)) {
+                  task.realNode.style[prop2] = "";
+                } else if ((Object.keys(task.virtualNode._catmagickProps.style || {}).includes(prop2) && !Object.keys(task.realNode._catmagickProps.style || {}).includes(prop2)) || task.virtualNode._catmagickProps.style[prop2] !== task.realNode._catmagickProps.style[prop2]) {
+                  task.realNode.style[prop2] = (typeof task.virtualNode._catmagickProps.style[prop2] === "number") ? `${task.virtualNode._catmagickProps.style[prop2]}px` : task.virtualNode._catmagickProps.style[prop2];
                 }
               }
+            } else {
+              task.realNode[prop] = task.virtualNode._catmagickProps[prop];
             }
-            task.realNode._catmagickProps = task.virtualNode._catmagickProps;
-          }
-          if (task.type == "remove") {
-            task.node.remove();
           }
         }
-      }).ready;
+        task.realNode._catmagickProps = task.virtualNode._catmagickProps;
+        if (typeof task.realNode._catmagickProps.ref === "function") {
+          task.realNode._catmagickProps.ref[elementContainsSymbol] = task.realNode;
+        }
+      }
+      if (task.type == "remove") {
+        if (task.node._catmagickProps && typeof task.node._catmagickProps.ref === "function") {
+          task.node._catmagickProps.ref[elementContainsSymbol] = null;
+        }
+        task.node.remove();
+      }
+    }
+    for (var task of tasks) {
+      if ((task.node && task.node._catmagickFlags && task.node._catmagickFlags.ViewTransition) || (task.virtualNode && task.virtualNode._catmagickFlags && task.virtualNode._catmagickFlags.ViewTransition)) {
+        transitionTasks.push(task);
+      } else {
+        doTask(task);
+      }
+    }
+    if (transitionTasks.length) {
+      try {
+        await document.startViewTransition(() => {
+          for (var task of transitionTasks) {
+            doTask(task);
+          }
+        }).ready;
+      } catch(err) {
+        if (err.name != "AbortError") {
+          throw err;
+        }
+      }
     }
   }
 
@@ -496,21 +547,21 @@
   };
 
   new class Activity extends CatMagick.Component {
-    render() {
+    render(props) {
       return [{
         "type": "div",
-        "props": {},
-        "children": currentComponent.children
+        "children": currentComponent.children,
+        props
       }];
     }
   }
 
   new class ViewTransition extends CatMagick.Component {
-    render() {
+    render({ animation, ...props }) {
       return [{
         "type": "div",
-        "props": {},
-        "children": currentComponent.children
+        "children": currentComponent.children,
+        props
       }];
     }
   }
