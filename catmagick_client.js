@@ -557,7 +557,7 @@
   }
 
   new class ViewTransition extends CatMagick.Component {
-    render({ animation, ...props }) {
+    render(props) {
       return [{
         "type": "div",
         "children": currentComponent.children,
