@@ -317,7 +317,7 @@
       }
     }
     for (var task of tasks) {
-      if ((task.node && task.node._catmagickFlags && task.node._catmagickFlags.ViewTransition) || (task.virtualNode && task.virtualNode._catmagickFlags && task.virtualNode._catmagickFlags.ViewTransition)) {
+      if (typeof document.startViewTransition === "function" && ((task.node && task.node._catmagickFlags && task.node._catmagickFlags.ViewTransition) || (task.virtualNode && task.virtualNode._catmagickFlags && task.virtualNode._catmagickFlags.ViewTransition))) {
         transitionTasks.push(task);
       } else {
         doTask(task);
