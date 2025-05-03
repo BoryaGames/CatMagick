@@ -19,6 +19,7 @@ CatMagick is a framework designed to make websites easily (both frontend and bac
 - No need to restart your server, it has *hot-reload* feature built-in
 - Auto rollback to working version in case of syntax error
 - CatMagick also maintains WebSocket connection between your frontend and backend at all times, so you can easily synchronize them
+- Easily integrate [reCAPTCHA](https://developers.google.com/recaptcha/intro) and [hCaptcha](https://www.hcaptcha.com) in your website
 - Automatically minify your code to reduce file size and load times
 - Ability to run on very old [Node.js](https://nodejs.org) versions
 - ✨ Magic ✨
@@ -111,6 +112,12 @@ CatMagick requires a `config.json` file in root of your project to start. While 
   "sessions": {
     "secret": "p2ssw0rd!", // if your project requires sessions to authorize the user, make a secure password for encrypting them, no default
     "secureCookie": false // if your cookies should be https, defaults to true, you must disable it if you're using HTTP, or your sessions may not work
+  },
+  "captcha": {
+    "enabled": true, // do you need captcha in your website, defaults to false
+    "provider": "recaptcha", // captcha provider - recaptcha/hcaptcha, defaults to recaptcha
+    "siteKey": "12345", // your captcha site key, no default
+    "secretKey": "54321" // your captcha secret key, no default
   }
 }
 ```
