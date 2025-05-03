@@ -25,7 +25,9 @@ module.exports = defineConfig([{
     "sourceType": "script",
     "globals": {
       ...globals.browser,
-      "pako": "readonly"
+      "pako": "readonly",
+      "grecaptcha": "readonly",
+      "hcaptcha": "readonly"
     }
   }
 }]);
