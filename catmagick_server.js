@@ -60,6 +60,12 @@ var defaultConfig = {
   "sessions": {
     "secret": null,
     "secureCookie": !0
+  },
+  "captcha": {
+    "enabled": !1,
+    "provider": "recaptcha",
+    "siteKey": null,
+    "secretKey": null
   }
 };
 
@@ -125,6 +131,27 @@ var wsClients = [];
 var dataSource = null;
 var databaseEntities = {};
 var databaseRelations = new Map;
+
+CatMagick.verifyCaptcha = async token => {
+  if (!config.captcha.enabled) {
+    return !0;
+  }
+  if (!token) {
+    return !1;
+  }
+  if (config.captcha.provider == "recaptcha" || config.captcha.provider == "hcaptcha") {
+    return (await fetch((config.captcha.provider == "recaptcha") ? "https://www.google.com/recaptcha/api/siteverify" : "https://api.hcaptcha.com/siteverify", {
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "body": new URLSearchParams({
+        "secret": config.captcha.secretKey,
+        "response": token
+      })
+    }).then(res => res.json())).success;
+  }
+};
 
 CatMagick.dispatchEvent = (event, data, condition) => {
   wsClients.filter(condition || (() => !0)).forEach(wsClient => {
@@ -353,7 +380,16 @@ function patchHTML(code) {
   if (doctype) {
     code = code.replace(/^<!DOCTYPE html>(\r?\n)?/, "");
   }
-  return `${doctype ? "<!DOCTYPE html>\n" : ""}<link href="/catmagick_client.css" rel="stylesheet">\n<script src="/catmagick_client.js"></script>\n${code}`;
+  var captchaImport = "";
+  if (config.captcha.enabled) {
+    if (config.captcha.provider == "recaptcha") {
+      captchaImport = `<script src="https://www.google.com/recaptcha/api.js?onload=CatMagickHandleCaptcha&render=explicit" async defer></script>\n<script>\n  CatMagick.captchaProvider = "${config.captcha.provider}";\n  CatMagick.captchaSiteKey = "${config.captcha.siteKey}";\n</script>\n`;
+    }
+    if (config.captcha.provider == "hcaptcha") {
+      captchaImport = `<script src="https://js.hcaptcha.com/1/api.js?onload=CatMagickHandleCaptcha&render=explicit&recaptchacompat=off" async defer></script>\n<script>\n  CatMagick.captchaProvider = "${config.captcha.provider}";\n  CatMagick.captchaSiteKey = "${config.captcha.siteKey}";\n</script>\n`;
+    }
+  }
+  return `${doctype ? "<!DOCTYPE html>\n" : ""}<link href="/catmagick_client.css" rel="stylesheet">\n<script src="/catmagick_client.js"></script>\n${captchaImport}${code}`;
 }
 
 server.use((req, res, next) => {

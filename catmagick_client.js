@@ -17,7 +17,7 @@
   var currentCacheIndex = 0;
   var currentEventIndex = 0;
   var textElementSymbol = Symbol("CatMagick.TextElement");
-  var elementContainsSymbol = Symbol("CatMagick.ElementContains");
+  var referenceContainsSymbol = Symbol("CatMagick.ReferenceContains");
   var virtualDom = document.createElement("body");
   var rootElement = "Root";
   var routes = {};
@@ -130,10 +130,11 @@
       }
       domElement._catmagickProps = Object.assign({}, element.props);
       if (typeof element.props.ref === "function") {
-        element.props.ref[elementContainsSymbol] = domElement;
+        element.props.ref[referenceContainsSymbol] = domElement;
       }
       Object.keys(element.props).forEach(key => domElement[key] = element.props[key]);
       Object.keys((element.props.style || {})).forEach(key => domElement.style[key] = (typeof element.props.style[key] === "number") ? `${element.props.style[key]}px` : element.props.style[key]);
+      var originalFlags = JSON.parse(JSON.stringify(flags));
       if (originalElement.type == "ViewTransition") {
         flags[originalElement.type] = {
           ...originalElement.props,
@@ -155,7 +156,7 @@
         parent.appendChild(domElement);
       }
       currentPath.pop();
-      flags = JSON.parse(JSON.stringify(domElement._catmagickFlags));
+      flags = originalFlags;
     }
 
     if (isRoot) {
@@ -306,12 +307,12 @@
         }
         task.realNode._catmagickProps = task.virtualNode._catmagickProps;
         if (typeof task.realNode._catmagickProps.ref === "function") {
-          task.realNode._catmagickProps.ref[elementContainsSymbol] = task.realNode;
+          task.realNode._catmagickProps.ref[referenceContainsSymbol] = task.realNode;
         }
       }
       if (task.type == "remove") {
         if (task.node._catmagickProps && typeof task.node._catmagickProps.ref === "function") {
-          task.node._catmagickProps.ref[elementContainsSymbol] = null;
+          task.node._catmagickProps.ref[referenceContainsSymbol] = null;
         }
         task.node.remove();
       }
@@ -425,15 +426,19 @@
     };
   }
 
-  function useElement() {
-    function getElement() {
-      return getElement[elementContainsSymbol];
+  function useReference() {
+    function getReference() {
+      return getReference[referenceContainsSymbol];
     }
-    getElement.displayData = () => {
-      return getElement().getBoundingClientRect();
+    getReference.displayData = () => {
+      return getReference().getBoundingClientRect();
     };
-    getElement[elementContainsSymbol] = null;
-    return getElement;
+    getReference.set = value => {
+      getReference[referenceContainsSymbol] = value;
+      return value;
+    };
+    getReference[referenceContainsSymbol] = null;
+    return getReference;
   }
 
   function useEvent(event, callback) {
@@ -566,6 +571,48 @@
     }
   }
 
+  new class Captcha extends CatMagick.Component {
+    render({ getToken, ...props }) {
+      if (!CatMagick.captchaProvider) {
+        throw "Captcha is not configured on the server.";
+      }
+
+      var captchaBox = useReference();
+      var widgetId = useReference();
+
+      getToken.set(() => {
+        if (CatMagick.captchaProvider == "recaptcha" && typeof grecaptcha !== "undefined") {
+          return (grecaptcha.getResponse(widgetId()) || null);
+        }
+        if (CatMagick.captchaProvider == "hcaptcha" && typeof hcaptcha !== "undefined") {
+          return (hcaptcha.getResponse(widgetId()) || null);
+        }
+      });
+
+      useEffect(() => {
+        if (CatMagick.captchaProvider == "recaptcha" && typeof grecaptcha !== "undefined") {
+          widgetId.set(grecaptcha.render(captchaBox(), {
+            "sitekey": CatMagick.captchaSiteKey
+          }));
+        }
+        if (CatMagick.captchaProvider == "hcaptcha" && typeof hcaptcha !== "undefined") {
+          widgetId.set(hcaptcha.render(captchaBox(), {
+            "sitekey": CatMagick.captchaSiteKey
+          }));
+        }
+      }, [typeof grecaptcha, typeof hcaptcha]);
+
+      return [{
+        "type": "div",
+        "children": currentComponent.children,
+        "props": {
+          "ref": captchaBox,
+          ...props
+        }
+      }];
+    }
+  }
+
   function dispatchEvent(event, data) {
     ws.send(pako.deflate(JSON.stringify([event, data])));
   }
@@ -577,7 +624,7 @@
   window.useMemo = useMemo;
   window.useCache = useCache;
   window.useLocation = useLocation;
-  window.useElement = useElement;
+  window.useReference = useReference;
   window.useEvent = useEvent;
   window.dispatchEvent = dispatchEvent;
 
@@ -608,6 +655,8 @@
     }
     render(!0, null, null, !1, {});
   });
+
+  window.CatMagickHandleCaptcha = CatMagick.rerender;
 
   if (document.readyState == "loading") {
     window.addEventListener("DOMContentLoaded", () => render(!0, null, null, !1, {}));
