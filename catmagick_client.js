@@ -5,6 +5,7 @@
   var currentPath = [];
   var visitedPaths = [];
   var currentComponent = null;
+  var preMigration = null;
   var elementTypes = new Map;
   var keyPathMapping = new Map;
   var states = new Map;
@@ -151,9 +152,9 @@
                 element = element.children[0];
               }
             } else {
-              var filtered = element.children.filter(child => child.type != textElementSymbol || child.props.nodeValue.trim());
-              if (filtered.length == 1) {
-                element = filtered[0];
+              var filtered2 = element.children.filter(child => child.type != textElementSymbol || child.props.nodeValue.trim());
+              if (filtered2.length == 1) {
+                element = filtered2[0];
               }
             }
           }
