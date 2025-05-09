@@ -6,6 +6,7 @@
   var visitedPaths = [];
   var currentComponent = null;
   var elementTypes = new Map;
+  var keyPathMapping = new Map;
   var states = new Map;
   var effects = new Map;
   var memos = new Map;
@@ -29,7 +30,7 @@
 
   CatMagick.createElement = (type, props, ...children) => {
     props = (props || {});
-    children = children.flat(Infinity).filter(child => child !== void 0 && child !== null).map(child => (typeof child === "string" || typeof child === "number") ? {
+    children = children.flat(Infinity).filter(child => child !== void 0 && child !== null && child !== !1).map(child => (typeof child === "string" || typeof child === "number") ? {
       "type": textElementSymbol,
       "props": {
         "nodeValue": child.toString()
@@ -56,6 +57,13 @@
       }
       debugLog("Rendering...");
       var renderStarted = performance.now();
+      preMigration = {
+        "states": new Map(states),
+        "effects": new Map(effects),
+        "memos": new Map(memos),
+        "caches": new Map(caches),
+        "events": new Map(events)
+      };
       virtualDom = document.createElement("body");
       currentStateIndex = 0;
       currentEffectIndex = 0;
@@ -109,6 +117,48 @@
             element = filtered[0];
           }
         }
+        if (element.props.key) {
+          if (keyPathMapping.has(element.props.key) && keyPathMapping.get(element.props.key) != currentPath.join(";")) {
+            var migrateFrom = keyPathMapping.get(element.props.key);
+            var migrateTo = currentPath.join(";");
+            if (preMigration.states.has(migrateFrom)) {
+              states.set(migrateTo, preMigration.states.get(migrateFrom));
+            }
+            if (preMigration.effects.has(migrateFrom)) {
+              effects.set(migrateTo, preMigration.effects.get(migrateFrom));
+            }
+            if (preMigration.memos.has(migrateFrom)) {
+              memos.set(migrateTo, preMigration.memos.get(migrateFrom));
+            }
+            if (preMigration.caches.has(migrateFrom)) {
+              caches.set(migrateTo, preMigration.caches.get(migrateFrom));
+            }
+            if (preMigration.events.has(migrateFrom)) {
+              events.set(migrateTo, preMigration.events.get(migrateFrom));
+            }
+            currentStateIndex = 0;
+            currentEffectIndex = 0;
+            currentMemoIndex = 0;
+            currentCacheIndex = 0;
+            currentEventIndex = 0;
+            element = {
+              "type": "div",
+              "props": {},
+              "children": (components[originalElement.type].render(currentComponent.props) || [])
+            };
+            if (element.children.length == 1) {
+              if (!components[element.children[0].type]) {
+                element = element.children[0];
+              }
+            } else {
+              var filtered = element.children.filter(child => child.type != textElementSymbol || child.props.nodeValue.trim());
+              if (filtered.length == 1) {
+                element = filtered[0];
+              }
+            }
+          }
+          keyPathMapping.set(element.props.key, currentPath.join(";"));
+        }
       }
       var domElement = (element.type == textElementSymbol) ? document.createTextNode("") : document.createElement(element.type);
       domElement._catmagickEvents = {};
@@ -135,19 +185,19 @@
       Object.keys(element.props).forEach(key => domElement[key] = element.props[key]);
       Object.keys((element.props.style || {})).forEach(key => domElement.style[key] = (typeof element.props.style[key] === "number") ? `${element.props.style[key]}px` : element.props.style[key]);
       var originalFlags = JSON.parse(JSON.stringify(flags));
-      if (originalElement.type == "ViewTransition") {
+      if (originalElement.type == "Animation") {
         flags[originalElement.type] = {
           ...originalElement.props,
           "_pathIndex": currentPath.length
         };
       }
-      if (flags.ViewTransition && domElement.style) {
+      if (flags.Animation && domElement.style) {
         domElement._catmagickProps.style = Object.assign({}, (domElement._catmagickProps.style || {}), {
-          "viewTransitionName": (flags.ViewTransition.name ? `${flags.ViewTransition.name}-${currentPath.slice(flags.ViewTransition._pathIndex).join("-")}` : `transition-${currentPath.join("-")}`),
-          "viewTransitionClass": flags.ViewTransition.animation
+          "viewTransitionName": (flags.Animation.name ? `${flags.Animation.name}-${currentPath.slice(flags.Animation._pathIndex).join("-")}` : `transition-${currentPath.join("-")}`),
+          "viewTransitionClass": flags.Animation.animation
         });
-        domElement.style.viewTransitionName = (flags.ViewTransition.name ? `${flags.ViewTransition.name}-${currentPath.slice(flags.ViewTransition._pathIndex).join("-")}` : `transition-${currentPath.join("-")}`);
-        domElement.style.viewTransitionClass = flags.ViewTransition.animation;
+        domElement.style.viewTransitionName = (flags.Animation.name ? `${flags.Animation.name}-${currentPath.slice(flags.Animation._pathIndex).join("-")}` : `transition-${currentPath.join("-")}`);
+        domElement.style.viewTransitionClass = flags.Animation.animation;
       }
       domElement._catmagickFlags = JSON.parse(JSON.stringify(flags));
       domElement._catmagickKey = element.props.key;
@@ -175,7 +225,7 @@
         events.delete(path);
       });
       debugLog("Syncing...");
-      await syncDom(virtualDom, document.body);
+      await syncDom(!0, virtualDom, document.body);
       debugLog(`Rendered in ${parseFloat((performance.now() - renderStarted).toFixed(1))}ms.`);
       for (var elementEffects of effects.values()) {
         for (var [effectId, effect2] of elementEffects.entries()) {
@@ -188,7 +238,7 @@
     }
   }
 
-  async function syncDom(virtual, real) {
+  async function syncDom(isRoot, virtual, real) {
     var maxNodes = Math.max(virtual.childNodes.length, real.childNodes.length);
     var tasks = [];
     var transitionTasks = [];
@@ -196,6 +246,9 @@
     var realChildNodes = Array.from(real.childNodes);
     var virtualKeys = virtualChildNodes.map(node => node._catmagickKey).filter(key => key);
     var realKeys = realChildNodes.map(node => node._catmagickKey).filter(key => key);
+    if (virtualKeys.length && virtualChildNodes.find(node => !node._catmagickKey)) {
+      throw "Mixing elements with and without key is not allowed, including text and spaces between elements.";
+    }
     for (var i = 0; i < maxNodes; i++) {
       var virtualNode = virtualChildNodes[i];
       var realNode = realChildNodes[i];
@@ -269,7 +322,7 @@
           "type": "update",
           virtualNode, realNode
         });
-        syncDom(virtualNode, realNode);
+        tasks.push(...(await syncDom(!1, virtualNode, realNode)));
       }
     }
     function doTask(task) {
@@ -317,11 +370,13 @@
         task.node.remove();
       }
     }
-    for (var task of tasks) {
-      if (typeof document.startViewTransition === "function" && ((task.node && task.node._catmagickFlags && task.node._catmagickFlags.ViewTransition) || (task.virtualNode && task.virtualNode._catmagickFlags && task.virtualNode._catmagickFlags.ViewTransition))) {
-        transitionTasks.push(task);
-      } else {
-        doTask(task);
+    if (isRoot) {
+      for (var task of tasks) {
+        if (typeof document.startViewTransition === "function" && ((task.node && task.node._catmagickFlags && task.node._catmagickFlags.Animation) || (task.virtualNode && task.virtualNode._catmagickFlags && task.virtualNode._catmagickFlags.Animation))) {
+          transitionTasks.push(task);
+        } else {
+          doTask(task);
+        }
       }
     }
     if (transitionTasks.length) {
@@ -337,6 +392,7 @@
         }
       }
     }
+    return tasks;
   }
 
   CatMagick.Component = class {
@@ -561,7 +617,7 @@
     }
   }
 
-  new class ViewTransition extends CatMagick.Component {
+  new class Animation extends CatMagick.Component {
     render(props) {
       return [{
         "type": "div",
@@ -573,7 +629,7 @@
 
   new class Captcha extends CatMagick.Component {
     render({ getToken, ...props }) {
-      if (!CatMagick.captchaProvider) {
+      if (!CatMagick.captchaSiteKey) {
         throw "Captcha is not configured on the server.";
       }
 
@@ -581,26 +637,16 @@
       var widgetId = useReference();
 
       getToken.set(() => {
-        if (CatMagick.captchaProvider == "recaptcha" && typeof grecaptcha !== "undefined") {
-          return (grecaptcha.getResponse(widgetId()) || null);
-        }
-        if (CatMagick.captchaProvider == "hcaptcha" && typeof hcaptcha !== "undefined") {
-          return (hcaptcha.getResponse(widgetId()) || null);
-        }
+        return (grecaptcha.getResponse(widgetId()) || null);
       });
 
       useEffect(() => {
-        if (CatMagick.captchaProvider == "recaptcha" && typeof grecaptcha !== "undefined") {
+        if (typeof grecaptcha !== "undefined") {
           widgetId.set(grecaptcha.render(captchaBox(), {
             "sitekey": CatMagick.captchaSiteKey
           }));
         }
-        if (CatMagick.captchaProvider == "hcaptcha" && typeof hcaptcha !== "undefined") {
-          widgetId.set(hcaptcha.render(captchaBox(), {
-            "sitekey": CatMagick.captchaSiteKey
-          }));
-        }
-      }, [typeof grecaptcha, typeof hcaptcha]);
+      }, [typeof grecaptcha]);
 
       return [{
         "type": "div",

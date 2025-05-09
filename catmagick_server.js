@@ -139,18 +139,23 @@ CatMagick.verifyCaptcha = async token => {
   if (!token) {
     return !1;
   }
-  if (config.captcha.provider == "recaptcha" || config.captcha.provider == "hcaptcha") {
-    return (await fetch((config.captcha.provider == "recaptcha") ? "https://www.google.com/recaptcha/api/siteverify" : "https://api.hcaptcha.com/siteverify", {
-      "method": "POST",
-      "headers": {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      "body": new URLSearchParams({
-        "secret": config.captcha.secretKey,
-        "response": token
-      })
-    }).then(res => res.json())).success;
+  var verifyLink = "https://www.google.com/recaptcha/api/siteverify";
+  if (config.captcha.provider == "hcaptcha") {
+    verifyLink = "https://api.hcaptcha.com/siteverify";
   }
+  if (config.captcha.provider == "turnstile") {
+    verifyLink = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+  }
+  return (await fetch(verifyLink, {
+    "method": "POST",
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    "body": new URLSearchParams({
+      "secret": config.captcha.secretKey,
+      "response": token
+    })
+  }).then(res => res.json())).success;
 };
 
 CatMagick.dispatchEvent = (event, data, condition) => {
@@ -383,10 +388,13 @@ function patchHTML(code) {
   var captchaImport = "";
   if (config.captcha.enabled) {
     if (config.captcha.provider == "recaptcha") {
-      captchaImport = `<script src="https://www.google.com/recaptcha/api.js?onload=CatMagickHandleCaptcha&render=explicit" async defer></script>\n<script>\n  CatMagick.captchaProvider = "${config.captcha.provider}";\n  CatMagick.captchaSiteKey = "${config.captcha.siteKey}";\n</script>\n`;
+      captchaImport = `<script src="https://www.google.com/recaptcha/api.js?onload=CatMagickHandleCaptcha&render=explicit" async defer></script>\n<script>\n  CatMagick.captchaSiteKey = "${config.captcha.siteKey}";\n</script>\n`;
     }
     if (config.captcha.provider == "hcaptcha") {
-      captchaImport = `<script src="https://js.hcaptcha.com/1/api.js?onload=CatMagickHandleCaptcha&render=explicit&recaptchacompat=off" async defer></script>\n<script>\n  CatMagick.captchaProvider = "${config.captcha.provider}";\n  CatMagick.captchaSiteKey = "${config.captcha.siteKey}";\n</script>\n`;
+      captchaImport = `<script src="https://js.hcaptcha.com/1/api.js?onload=CatMagickHandleCaptcha&render=explicit" async defer></script>\n<script>\n  CatMagick.captchaSiteKey = "${config.captcha.siteKey}";\n</script>\n`;
+    }
+    if (config.captcha.provider == "turnstile") {
+      captchaImport = `<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=CatMagickHandleCaptcha&render=explicit&compat=recaptcha" async defer></script>\n<script>\n  CatMagick.captchaSiteKey = "${config.captcha.siteKey}";\n</script>\n`;
     }
   }
   return `${doctype ? "<!DOCTYPE html>\n" : ""}<link href="/catmagick_client.css" rel="stylesheet">\n<script src="/catmagick_client.js"></script>\n${captchaImport}${code}`;
@@ -454,12 +462,7 @@ server.use((req, res, next) => {
       function fallback() {
         res.end(babel.transformSync((compileCache[filePath] || ""), {
           "presets": [["minify", {
-            "mangle": {
-              "keepClassName": !0
-            },
-            "deadcode": {
-              "keepClassName": !0
-            }
+            "keepClassName": !0
           }]].slice(config.features.minify ? 0 : 1),
           "plugins": ["babel-plugin-transform-catmagick-jsx"],
           "sourceMaps": config.features.sourceMaps ? "inline": !1,
@@ -512,7 +515,7 @@ server.use((req, res, next) => {
           "CatMagick": {
             "createElement": (type, props, ...children) => {
               props = (props || {});
-              children = children.flat(Infinity).filter(child => child !== void 0 && child !== null).map(child => (typeof child === "string" || typeof child === "number") ? {
+              children = children.flat(Infinity).filter(child => child !== void 0 && child !== null && child !== !1).map(child => (typeof child === "string" || typeof child === "number") ? {
                 "type": textElementSymbol,
                 "props": {
                   "nodeValue": child.toString()
@@ -625,7 +628,17 @@ server.use((req, res, next) => {
   }
   if (req.path == "/catmagick_client.js") {
     res.header("Content-Type", "application/javascript; charset=UTF-8");
-    return res.end(fs.readFileSync(path.join(__dirname, "pako.min.js")).toString("utf-8") + "\n\n" + fs.readFileSync(path.join(__dirname, "catmagick_client.js")).toString("utf-8"));
+    var catmagickClient = fs.readFileSync(path.join(__dirname, "catmagick_client.js")).toString("utf-8");
+    if (config.features.minify) {
+      catmagickClient = babel.transformSync(catmagickClient, {
+        "presets": [["minify", {
+          "keepClassName": !0
+        }]],
+        "sourceMaps": !1,
+        "minified": !0
+      }).code;
+    }
+    return res.end(fs.readFileSync(path.join(__dirname, "pako.min.js")).toString("utf-8") + "\n\n" + catmagickClient);
   }
 
   var parts = req.path.split("/").filter(part => part);

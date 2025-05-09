@@ -19,7 +19,8 @@ CatMagick is a framework designed to make websites easily (both frontend and bac
 - No need to restart your server, it has *hot-reload* feature built-in
 - Auto rollback to working version in case of syntax error
 - CatMagick also maintains WebSocket connection between your frontend and backend at all times, so you can easily synchronize them
-- Easily integrate [reCAPTCHA](https://developers.google.com/recaptcha/intro) or [hCaptcha](https://www.hcaptcha.com) in your website
+- Easily integrate [reCAPTCHA](https://developers.google.com/recaptcha/intro), [hCaptcha](https://www.hcaptcha.com) or [Turnstile](https://developers.cloudflare.com/turnstile) in your website
+- Make animations easily using [View Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API)
 - Automatically minify your code to reduce file size and load times
 - Ability to run on very old [Node.js](https://nodejs.org) versions
 - ✨ Magic ✨
@@ -115,7 +116,7 @@ CatMagick requires a `config.json` file in root of your project to start. While 
   },
   "captcha": {
     "enabled": true, // do you need captcha in your website, defaults to false
-    "provider": "recaptcha", // captcha provider - recaptcha/hcaptcha, defaults to recaptcha
+    "provider": "recaptcha", // captcha provider - recaptcha/hcaptcha/turnstile, defaults to recaptcha
     "siteKey": "12345", // your captcha site key, no default
     "secretKey": "54321" // your captcha secret key, no default
   }
@@ -379,7 +380,7 @@ console.log(1);
 
 5) After the render, `2` is being printed to the console again.
 
-### Accesing the element reference
+### References
 
 Sometimes, you just want to do a simple focus:
 
@@ -387,24 +388,52 @@ Sometimes, you just want to do a simple focus:
 input.focus();
 ```
 
-But you must get the `input` element first. And `useElement` can help with that.
+But you must get the `input` element first. And a *reference* can help with that.
 
-> `useElement` is not a hook, so you can call it safely any amount of times.
+> `useReference` is not a hook, so you can call it safely any amount of times.
 
 ```jsx
 new class Root extends CatMagick.Component {
   render() {
-    // We create a reference to that element
-    var input = useElement();
+    // We create a reference
+    var input = useReference();
 
     useEffect(() => {
       // After the render, we can focus the input using the reference we've made.
       // Don't forget: input is a reference and not an element, you must call it first to get the element - input()
       input().focus();
+
+      // By the way, ref.displayData() is a shortcut for ref().getBoundingClientRect()
+      console.log(input.displayData());
     }, []);
 
     // We must add the reference to "ref" attribute
     return <input type="text" ref={input} />;
+  }
+}
+```
+
+Also, you can use references to pass some value to the parent component.
+
+```jsx
+new class Root extends CatMagick.Component {
+  render() {
+    var test = useReference();
+
+    useEffect(() => {
+      console.log(test()); // -> 5
+    }, []);
+
+    return <Child test={test} />;
+  }
+}
+
+new class Child extends CatMagick.Component {
+  render({ test }) {
+    // Set the value to 5
+    test.set(5);
+
+    return <p>Hello, World!</p>;
   }
 }
 ```
@@ -494,7 +523,7 @@ new class UserPage extends CatMagick.Component {
 CatMagick.route("/users/$id", "UserPage");
 ```
 
-### Activity
+### Activity component
 
 Sometimes you want to remove a component from the screen, but keep its current state. Or maybe you want to pre-render component in background without showing it on the screen.
 
@@ -549,6 +578,154 @@ new class Root extends CatMagick.Component {
 ```
 
 Now, when `show = false`, component will completely remove from the DOM, but still its `render()` function will be called, its state being remembered and its effects will still work.
+
+### Keys
+
+Look at this code:
+
+```jsx
+new class Root extends CatMagick.Component {
+  render() {
+    var [swap, setSwap] = useState(false);
+
+    return (
+      <center>
+        {swap ? <div>
+          <input type="text" placeholder="Input 2" />
+          <input type="text" placeholder="Input 1" />
+        </div> : <div>
+          <input type="text" placeholder="Input 1" />
+          <input type="text" placeholder="Input 2" />
+        </div>}
+        <br /><br />
+        <button click={() => setSwap(!swap)}>Swap</button>
+      </center>
+    );
+  }
+}
+```
+
+We swap the inputs on button press, but the state of the component is position-based. You can see the inputs swap (their placeholder swaps), but the text inside the input remains at the same position. You can solve this by using keys:
+
+```jsx
+new class Root extends CatMagick.Component {
+  render() {
+    var [swap, setSwap] = useState(false);
+
+    return (
+      <center>
+        {swap ? <div>
+          <input type="text" placeholder="Input 2" key="myinput2" />
+          <input type="text" placeholder="Input 1" key="myinput1" />
+        </div> : <div>
+          <input type="text" placeholder="Input 1" key="myinput1" />
+          <input type="text" placeholder="Input 2" key="myinput2" />
+        </div>}
+        <br /><br />
+        <button click={() => setSwap(!swap)}>Swap</button>
+      </center>
+    );
+  }
+}
+```
+
+Now, CatMagick understands that inputs have been swapped and will do it more efficiently while also swapping the state.
+
+```jsx
+new class Root extends CatMagick.Component {
+  render() {
+    var [swap, setSwap] = useState(false);
+
+    return (
+      <center>
+        {swap ? <div>
+          <Counter key="mycounter2" />
+          <Counter key="mycounter1" />
+        </div> : <div>
+          <Counter key="mycounter1" />
+          <Counter key="mycounter2" />
+        </div>}
+        <br /><br />
+        <button click={() => setSwap(!swap)}>Swap</button>
+      </center>
+    );
+  }
+}
+
+new class Counter extends CatMagick.Component {
+  render({ key }) {
+    var [count, setCount] = useState(0);
+
+    return <button click={() => setCount(count + 1)} key={key}>
+      Count: {count}
+    </button>;
+  }
+}
+```
+
+This code with custom component also works, but a little different inside. Both counters are being rendered 2 times at the same time:
+
+1. Normal render
+
+2. CatMagick saw the state needs to be swapped
+
+3. CatMagick does *state migration*
+
+4. Second render with correct state
+
+### Animations
+
+You can use built-in `<Animation>` component to make animations:
+
+```jsx
+new class Root extends CatMagick.Component {
+  render() {
+    var [blue, setBlue] = useState(false);
+    var [hidden, setHidden] = useState(false);
+
+    return (
+      <center>
+        <br />
+        <Animation>
+          {!hidden && <div style={{
+            "backgroundColor": blue ? "blue" : "red"
+          }}></div>}
+        </Animation>
+        <br /><br />
+        <button click={() => setBlue(!blue)}>Change color</button>
+        <br />
+        <button click={() => setHidden(!hidden)}>Show / Hide</button>
+      </center>
+    );
+  }
+}
+```
+
+By just wrapping your element(s) in this component, it will show, hide, change color, move, etc smoothly.
+
+> ⚠️ Animations currently doesn't work in Firefox, as it doesn't support [View Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API).
+
+You may want to customize the animations:
+
+```jsx
+        <Animation animation="slow-fade">
+          {!hidden && <div style={{
+            "backgroundColor": blue ? "blue" : "red"
+          }}></div>}
+        </Animation>
+```
+
+```css
+::view-transition-old(.slow-fade) {
+  animation-duration: 500ms;
+}
+
+::view-transition-new(.slow-fade) {
+  animation-duration: 500ms;
+}
+```
+
+In case you're moving an element, you should also add an unique `name` attribute to the animation - this way browser will find the element's position after it has moved. Or in case you're animating a list, make sure to also use `name` and `key` attributes.
 
 ### Server explanation
 
@@ -706,7 +883,7 @@ module.exports = (content, client) => {
   // Update messages for all users
   CatMagick.dispatchEvent("NEW_MESSAGE", content);
 
-  // Btw, you can use the client variable to store info about the client
+  // By the way, you can use the client variable to store info about the client
   // This client is authorized as user 123
   client.user = 123;
   // We can send events based on condition: send only to all clients authorized as user 123
@@ -849,4 +1026,50 @@ var msg = await Message.getOne({
 
 console.log(msg.author.id); // 123
 console.log(msg.author.username); // cat
+```
+
+### Captcha
+
+Secure your website from bots using *CAPTCHA* - first, set it up in the config. Then, just add a `<Captcha />` component to your website:
+
+```jsx
+new class Root extends CatMagick.Component {
+  render() {
+    var getToken = useReference();
+
+    return (
+      <center>
+        <br />
+        <br />
+        <Captcha getToken={getToken} />
+        <br />
+        <br />
+        <button click={() => {
+          CatMagick.fetch("/send", {
+            "method": "POST",
+            "body": {
+              "captcha": getToken()()
+            }
+          });
+        }}>Send</button>
+      </center>
+    );
+  }
+}
+```
+
+Once user clicked "Send", you can use a reference to get solved token to send to your server. And you can verify it like this:
+
+```js
+exports.post = async (req, res) => {
+  if (!await CatMagick.verifyCaptcha(req.body.captcha)) {
+    // Captcha failed
+    res.status(400);
+    return res.end("Invalid captcha.");
+  }
+
+  // Captcha passed
+  res.status(204);
+  res.end();
+};
 ```
