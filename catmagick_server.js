@@ -538,12 +538,7 @@ server.use((req, res, next) => {
       try {
         var compiled = babel.transformSync(code, {
           "presets": [["minify", {
-            "mangle": {
-              "keepClassName": !0
-            },
-            "deadcode": {
-              "keepClassName": !0
-            }
+            "keepClassName": !0
           }]].slice(config.features.minify ? 0 : 1),
           "plugins": ["babel-plugin-transform-catmagick-jsx"],
           "sourceMaps": config.features.sourceMaps ? "inline": !1,
