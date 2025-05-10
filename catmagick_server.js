@@ -486,7 +486,7 @@ server.use((req, res, next) => {
         }
       }
       var code = fs.readFileSync(filePath).toString("utf-8");
-      code = code.replace(/"@private"((?:\r?\nvar .+;)+|\r?\nasync function ([^()]+)\((.+)\) {\r?\n[^]+?\r?\n})(\r?\n\r?\n|$)/g, (_, _code2, funcName, funcArgs, spacing) => {
+      code = code.replace(/"@private"((?:\r?\nvar .+;)+|\r?\nasync function ([^()]+)\((.*?)\) {\r?\n[^]+?\r?\n})(\r?\n\r?\n|$)/g, (_, _code2, funcName, funcArgs, spacing) => {
         if (!funcName) {
           return "";
         }
@@ -671,11 +671,11 @@ server.use((req, res, next) => {
         var serverCode = "";
         var serverFunctions = new Set;
         var callFunction = req.get("X-CatMagick-Call");
-        Array.from(code.matchAll(/"@private"((?:\r?\nvar .+;)+|\r?\nasync function ([^()]+)\((.+)\) {\r?\n[^]+?\r?\n})(\r?\n\r?\n|$)/g)).forEach(match => {
-          serverCode += match[1];
-          serverCode += match[4];
-          if (match[2]) {
-            serverFunctions.add(match[2]);
+        Array.from(code.matchAll(/"@private"((?:\r?\nvar .+;)+|\r?\nasync function ([^()]+)\((.*?)\) {\r?\n[^]+?\r?\n})(\r?\n\r?\n|$)/g)).forEach(([_, code2, funcName, _funcArgs, spacing]) => {
+          serverCode += code2;
+          serverCode += spacing;
+          if (funcName) {
+            serverFunctions.add(funcName);
           }
         });
         if (!Array.isArray(req.body) || !serverFunctions.has(callFunction)) {
