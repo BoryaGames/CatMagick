@@ -21,6 +21,7 @@ CatMagick is a framework designed to make websites easily (both frontend and bac
 - CatMagick also maintains WebSocket connection between your frontend and backend at all times, so you can easily synchronize them
 - Easily integrate [reCAPTCHA](https://developers.google.com/recaptcha/intro), [hCaptcha](https://www.hcaptcha.com) or [Turnstile](https://developers.cloudflare.com/turnstile) in your website
 - Make animations easily using [View Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API)
+- Write both frontend and backend in the same file without worrying about requests
 - Automatically minify your code to reduce file size and load times
 - Ability to run on very old [Node.js](https://nodejs.org) versions
 - ✨ Magic ✨
@@ -127,7 +128,7 @@ CatMagick requires a `config.json` file in root of your project to start. While 
 
 ### First component
 
-Once you have made your `config.json`, create `routes` and `middleware` folders, if you use a database - you also need to create a `databases` folder.
+Once you have made your `config.json`, create `routes`, `middleware` and `events` folders, if you use a database - you also need to create a `databases` folder.
 
 Now, go to your `routes` folder and just add `index.html` to it, start your project and go to your website - you will see your HTML there.
 
@@ -783,7 +784,7 @@ All your routes and middleware will be automatically reloaded on changes, if hot
 
 In case requested route doesn't exist, CatMagick will respond with 404. If requested route exists, but requested method doesn't, CatMagick will respond with 405. If requested route exists, but it fails due to an error, it will be reported to the console and CatMagick will respond with 500.
 
-If you want to make your own friendly design for errors, you can add `404.html`, `405.html`, `500.html` files in project root.
+If you want to make your own friendly design for errors, you can add `400.html`, `404.html`, `405.html`, `500.html` files in project root.
 
 ### WebSocket
 
@@ -1073,3 +1074,38 @@ exports.post = async (req, res) => {
   res.end();
 };
 ```
+
+### Server-side rendering
+
+First, don't forget to enable *SSR* in the config. After that, you can insert server variables like this:
+
+```jsx
+<p>Your IP address is {_%= req.ip %_}</p>
+```
+
+There's three variations of this syntax:
+
+`{_% code %_}` - execute code when page is loading, do not insert anything
+
+`{_%= code %_}` - insert some value, but filter the output to prevent [XSS](https://en.wikipedia.org/wiki/Cross-site_scripting)
+
+`{_%- code %_}` - insert any value, useful for inserting JSX tags
+
+### Executing backend code inside JSX
+
+You can write both frontend and backend inside a single JSX file.
+
+```jsx
+"@private"
+async function test(name) {
+  return `Your name - ${name}, and your IP address - ${req.ip}`;
+}
+
+async function meow() {
+  console.log(await test("John"));
+}
+```
+
+Here, `test(name)` function is being executed on the server (backend) and works just like a normal function in frontend, while `meow()` is a normal client function (frontend).
+
+> ⚠️ Private functions must be async top-level functions, there should be `"@private"` before each server top-level variable or function. There should be at least one empty line between functions.

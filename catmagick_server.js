@@ -71,6 +71,10 @@ var defaultConfig = {
 
 config = Object.assign({}, defaultConfig, config);
 Object.keys(config).forEach(category => {
+  if (!defaultConfig[category]) {
+    log("FATAL", `Unknown config category "${category}"`);
+    return process.exit(1);
+  }
   config[category] = Object.assign({}, defaultConfig[category], config[category]);
 });
 
@@ -482,6 +486,12 @@ server.use((req, res, next) => {
         }
       }
       var code = fs.readFileSync(filePath).toString("utf-8");
+      code = code.replace(/"@private"((?:\r?\nvar .+;)+|\r?\nasync function ([^()]+)\((.+)\) {\r?\n[^]+?\r?\n})(\r?\n\r?\n|$)/g, (_, _code2, funcName, funcArgs, spacing) => {
+        if (!funcName) {
+          return "";
+        }
+        return `async function ${funcName}(${funcArgs}) {\n  var response = await CatMagick.fetch("/${path.relative(path.join(__dirname, "..", "..", "routes"), filePath)}", {\n    "method": "POST",\n    "headers": {\n      "X-CatMagick-Call": "${funcName}"\n    },\n    "body": [${funcArgs}]\n  });\n  if (response.status == 200) {\n    return await response.json();\n  } else if (response.status != 204) {\n    throw await response.text();\n  }\n}${spacing}`;
+      });
       if (config.features.SSR) {
         var parts = code.split(/{_% ([^]+?) %_}/g);
         var compile = "";
@@ -655,6 +665,64 @@ server.use((req, res, next) => {
     }
   }
   if (fs.statSync(currentDirectory).isFile()) {
+    if (req.method == "POST") {
+      if (currentDirectory.endsWith(".jsx")) {
+        var code = fs.readFileSync(currentDirectory).toString("utf-8");
+        var serverCode = "";
+        var serverFunctions = new Set;
+        var callFunction = req.get("X-CatMagick-Call");
+        Array.from(code.matchAll(/"@private"((?:\r?\nvar .+;)+|\r?\nasync function ([^()]+)\((.+)\) {\r?\n[^]+?\r?\n})(\r?\n\r?\n|$)/g)).forEach(([_, code2, funcName, _funcArgs, spacing]) => {
+          serverCode += code2;
+          serverCode += spacing;
+          if (funcName) {
+            serverFunctions.add(funcName);
+          }
+        });
+        if (!Array.isArray(req.body) || !serverFunctions.has(callFunction)) {
+          res.status(400);
+          if (fs.existsSync("400.html")) {
+            return res.sendFile(path.join(__dirname, "..", "..", "400.html"));
+          }
+          return res.end("400 Bad Request");
+        }
+        var context = vm.createContext({
+          req, console, CatMagick,
+          "require": (typeof Module.createRequire === "function") ? Module.createRequire(path.dirname(currentDirectory) + path.sep) : name => {
+            if (!name.startsWith(".")) {
+              return require(name);
+            }
+            return require(path.join(path.dirname(currentDirectory), name));
+          }
+        });
+        try {
+          vm.runInContext(serverCode, context);
+        } catch(err) {
+          log("ERROR", `${req.path} - Cannot execute private JSX due to the following error:`);
+          console.error(err.message);
+          res.status(500);
+          if (fs.existsSync("500.html")) {
+            return res.sendFile(path.join(__dirname, "..", "..", "500.html"));
+          }
+          return res.end("500 Internal Server Error");
+        }
+        try {
+          var result = await context[callFunction](...req.body);
+          if (result !== void 0) {
+            return res.json(result);
+          }
+          res.status(204);
+          return res.end();
+        } catch(err) {
+          res.status(400);
+          return res.end(err.toString());
+        }
+      }
+      res.status(405);
+      if (fs.existsSync("405.html")) {
+        return res.sendFile(path.join(__dirname, "..", "..", "405.html"));
+      }
+      return res.end("405 Method Not Allowed");
+    }
     return res.sendFile(currentDirectory);
   }
   if (fs.existsSync(path.join(currentDirectory, "_route.js"))) {
@@ -770,16 +838,28 @@ if (config.hotReload.config) {
   }).on("change", () => {
     log("INFO", "Doing config hot reload");
     delete module.constructor._cache[require.resolve(path.join(__dirname, "..", "..", "config.json"))];
+    var originalConfig = Object.assign({}, config);
     try {
       config = require("../../config.json");
     } catch(err) {
       log("ERROR", "Could not parse config due to the following error:");
       return console.error(err);
     }
+    var cancelReload = !1;
     config = Object.assign({}, defaultConfig, config);
     Object.keys(config).forEach(category => {
+      if (cancelReload) {
+        return;
+      }
+      if (!defaultConfig[category]) {
+        log("ERROR", `Unknown config category "${category}"`);
+        cancelReload = !0;
+      }
       config[category] = Object.assign({}, defaultConfig[category], config[category]);
     });
+    if (cancelReload) {
+      config = originalConfig;
+    }
   });
 }
 
