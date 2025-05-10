@@ -671,11 +671,11 @@ server.use((req, res, next) => {
         var serverCode = "";
         var serverFunctions = new Set;
         var callFunction = req.get("X-CatMagick-Call");
-        Array.from(code.matchAll(/"@private"((?:\r?\nvar .+;)+|\r?\nasync function ([^()]+)\((.+)\) {\r?\n[^]+?\r?\n})(\r?\n\r?\n|$)/g)).forEach(([_, code2, funcName, _funcArgs, spacing]) => {
-          serverCode += code2;
-          serverCode += spacing;
-          if (funcName) {
-            serverFunctions.add(funcName);
+        Array.from(code.matchAll(/"@private"((?:\r?\nvar .+;)+|\r?\nasync function ([^()]+)\((.+)\) {\r?\n[^]+?\r?\n})(\r?\n\r?\n|$)/g)).forEach(match => {
+          serverCode += match[1];
+          serverCode += match[4];
+          if (match[2]) {
+            serverFunctions.add(match[2]);
           }
         });
         if (!Array.isArray(req.body) || !serverFunctions.has(callFunction)) {
