@@ -21,7 +21,7 @@ CatMagick is a framework designed to make websites easily (both frontend and bac
 - CatMagick also maintains WebSocket connection between your frontend and backend at all times, so you can easily synchronize them
 - Easily integrate [reCAPTCHA](https://developers.google.com/recaptcha/intro), [hCaptcha](https://www.hcaptcha.com) or [Turnstile](https://developers.cloudflare.com/turnstile) in your website
 - Make animations easily using [View Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API)
-- Write both frontend and backend in the same file without worrying about requests
+- Write both frontend and backend in the same file without worrying about connection between them
 - Automatically minify your code to reduce file size and load times
 - Ability to run on very old [Node.js](https://nodejs.org) versions
 - ✨ Magic ✨
