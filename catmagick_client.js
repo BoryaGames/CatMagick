@@ -26,6 +26,7 @@
   var routeParams = {};
   var ws = null;
   var pingInterval = null;
+  var renderStatus = 0;
 
   CatMagick.debug = !1;
 
@@ -58,6 +59,7 @@
       }
       debugLog("Rendering...");
       var renderStarted = performance.now();
+      renderStatus = 1;
       preMigration = {
         "states": new Map(states),
         "effects": new Map(effects),
@@ -192,7 +194,8 @@
           "_pathIndex": currentPath.length
         };
       }
-      if (flags.Animation && domElement.style) {
+      // TODO
+      if (originalElement.type == "Animation" && flags.Animation && domElement.style) {
         domElement._catmagickProps.style = Object.assign({}, (domElement._catmagickProps.style || {}), {
           "viewTransitionName": (flags.Animation.name ? `${flags.Animation.name}-${currentPath.slice(flags.Animation._pathIndex).join("-")}` : `transition-${currentPath.join("-")}`),
           "viewTransitionClass": flags.Animation.animation
@@ -235,6 +238,11 @@
             elementEffects.set(effectId, [effect2[0], null, effect2[1]()]);
           }
         }
+      }
+      if (renderStatus == 2) {
+        render(!0, null, null, !1, {});
+      } else {
+        renderStatus = 0;
       }
     }
   }
@@ -420,7 +428,11 @@
     }
     return [states.get(path).get(localIndex), value => {
       states.get(path).set(localIndex, value);
-      render(!0, null, null, !1, {});
+      if (renderStatus === 0) {
+        render(!0, null, null, !1, {});
+      } else {
+        renderStatus = 2;
+      }
     }];
   }
 
@@ -488,7 +500,15 @@
       return getReference[referenceContainsSymbol];
     }
     getReference.displayData = () => {
-      return getReference().getBoundingClientRect();
+      if (!getReference[referenceContainsSymbol]) {
+        return {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        };
+      }
+      return getReference[referenceContainsSymbol].getBoundingClientRect();
     };
     getReference.set = value => {
       getReference[referenceContainsSymbol] = value;
@@ -592,7 +612,11 @@
   };
 
   CatMagick.rerender = () => {
-    render(!0, null, null, !1, {});
+    if (renderStatus === 0) {
+      render(!0, null, null, !1, {});
+    } else {
+      renderStatus = 2;
+    }
   };
 
   CatMagick.fetch = (url, options) => {
